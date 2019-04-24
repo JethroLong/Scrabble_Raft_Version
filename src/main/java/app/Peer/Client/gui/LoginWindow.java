@@ -295,6 +295,9 @@ public class LoginWindow implements Runnable {
             if (address.equals("")) {
                 address = "localhost";
             }
+            if (portStr.equals("")){
+                portStr = "6666";
+            }
             new MonitorGui(Integer.parseInt(portStr));
             System.out.println("login action start");
 //            loginAction(userNameStr, address, portStr);

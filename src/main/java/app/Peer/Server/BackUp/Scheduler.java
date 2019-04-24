@@ -10,17 +10,14 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class Scheduler implements Runnable{
     private Timer timer;
-    private BlockingQueue<Pack> toNet;
     private ArrayList<PeerSockets> peerSockets;
 
-    public Scheduler(BlockingQueue<Pack> toNet, ArrayList<PeerSockets> peerSockets) {
-        this.toNet = toNet;
+    public Scheduler(ArrayList<PeerSockets> peerSockets) {
         this.peerSockets = peerSockets;
         this.timer = new Timer();
     }
 
     public Scheduler() {
-        this.toNet = new LinkedBlockingDeque<Pack>();
         this.peerSockets = new ArrayList<PeerSockets>();
         this.timer = new Timer();
     }
@@ -30,6 +27,6 @@ public class Scheduler implements Runnable{
 
     @Override
     public void run() {
-        timer.scheduleAtFixedRate(new BackUpTask(),1000,1000);
+        timer.scheduleAtFixedRate(new BackUpTask(),1000,15000);
     }
 }

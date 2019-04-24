@@ -22,6 +22,11 @@ import java.util.logging.Logger;
 public class Net implements Runnable{
     private String tag = "Net";
     private static Logger logger = Logger.getLogger(String.valueOf(Net.class));
+
+    public ArrayList<PeerSockets> getPeerSockets() {
+        return peerSockets;
+    }
+
     private ArrayList<PeerSockets> peerSockets; // to store peer sockets
     private final BlockingQueue<Pack> fromCenter;
     private final BlockingQueue<Pack> toCenter;
@@ -105,15 +110,15 @@ public class Net implements Runnable{
             server = new ServerSocket(port);
             LoginWindow loginWindow = LoginWindow.get();
             loginWindow.loginAction(loginWindow.getUserNameStr(),loginWindow.getAddress(),loginWindow.getPortStr());
-            if (clientNumber == 1){
-                new Thread(new Scheduler(fromCenter, peerSockets)).start();
-            }
             while (flag){
                 client = server.accept();
                 peerSockets.add(new PeerSockets(clientNumber, client));
                 DataOutputStream dataOutputStream = new DataOutputStream(client
                             .getOutputStream());
 
+                if (clientNumber == 1){
+                    new Thread(new Scheduler()).start();
+                }
                 // UserID distribution
                 clientDataHsh.put(client,dataOutputStream);
                 clientNameHash.put(clientNumber++,client);

@@ -4,6 +4,8 @@ package app.Peer.Server.BackUp;
 import app.Models.GameState;
 import app.Models.PeerSockets;
 import app.Peer.Server.controllers.gameEngine.GameProcess;
+import app.Peer.Server.controllers.gameEngine.blockingqueque.EnginePutMsg;
+import app.Peer.Server.controllers.net.Net;
 import app.Protocols.NonGamingProtocol.BackupProtocol;
 import app.Protocols.Pack;
 import com.alibaba.fastjson.JSON;
@@ -15,19 +17,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class BackUpTask extends TimerTask implements Runnable {
 
-    private BlockingQueue<Pack> toNet;
-    private ArrayList<PeerSockets> peerSockets;
 
+    public BackUpTask() {}
 
-    public BackUpTask() {
-        this.toNet = new LinkedBlockingQueue<Pack>();
-        this.peerSockets = new ArrayList<PeerSockets>();
-    }
-
-    public BackUpTask(BlockingQueue<Pack> toNet, ArrayList<PeerSockets> peerSockets) {
-        this.toNet = toNet;
-        this.peerSockets = peerSockets;
-    }
 
     @Override
     public void run() {
@@ -40,16 +32,14 @@ public class BackUpTask extends TimerTask implements Runnable {
         try {
             Pack temp = Packing();
             System.out.println("Pack: "+temp);
-            System.out.println("toNet: " + toNet);
-            toNet.put(temp);
-        } catch (InterruptedException e) {
+            EnginePutMsg.getInstance().putMsgToCenter(temp);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public Pack Packing() {
-        System.out.println(peerSockets);
-
+        ArrayList<PeerSockets> peerSockets = Net.getInstance().getPeerSockets();
         if (peerSockets != null) {
             PeerSockets[] peerSockets_List = new PeerSockets[peerSockets.size()];
             peerSockets_List = peerSockets.toArray(peerSockets_List);
