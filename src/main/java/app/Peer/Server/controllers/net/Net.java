@@ -96,15 +96,19 @@ public class Net implements Runnable{
         int clientNumber = 1;
         try {
             server = new ServerSocket(port);
-            System.err.println("server complete");
             LoginWindow loginWindow = LoginWindow.get();
             loginWindow.loginAction(loginWindow.getUserNameStr(),loginWindow.getAddress(),loginWindow.getPortStr());
+
             while (flag){
                 client = server.accept();
                 DataOutputStream dataOutputStream = new DataOutputStream(client
                             .getOutputStream());
+
+                // UserID distribution
                 clientDataHsh.put(client,dataOutputStream);
                 clientNameHash.put(clientNumber++,client);
+
+                // allocate a worker thread for the new client.
                 pool.execute(new NetThread(client,clientDataHsh,clientNameHash,toNetPutMsg,clientNumber-1));
             }
         } catch (IOException e) {
