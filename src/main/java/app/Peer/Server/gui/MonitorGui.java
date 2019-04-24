@@ -21,14 +21,14 @@ public class MonitorGui {
     private int portNum;
 
     public MonitorGui() {
-        new Thread(new ControlCenter()).start();
         this.portNum = 6666;
+        new Thread(new ControlCenter()).start();
         initialize();
     }
 
     public MonitorGui(int port) {
-        new Thread(new ControlCenter()).start();
         this.portNum = port;
+        new Thread(new ControlCenter(port)).start();
         initialize();
     }
     private void initialize() {

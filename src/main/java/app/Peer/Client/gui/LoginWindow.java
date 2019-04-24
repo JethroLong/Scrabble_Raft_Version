@@ -28,6 +28,23 @@ public class LoginWindow implements Runnable {
     private JTextField port;
     private JCheckBox mode;
     private JTextArea inviteURL;
+    private String address;
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getPortStr() {
+        return portStr;
+    }
+
+    public String getUserNameStr() {
+        return userNameStr;
+    }
+
+    private String portStr;
+    private String userNameStr;
+
 
     public LoginWindow() {
     }
@@ -175,7 +192,7 @@ public class LoginWindow implements Runnable {
 //        }
 //    }
 
-    void loginAction(String userName, String ipAddr, String portNum) {
+    public void loginAction(String userName, String ipAddr, String portNum) {
         if(!userName.isEmpty()) {
             center.openNet(ipAddr, Integer.parseInt(portNum), userName);
             //clientManager.openSocket(address, portStr, userNameStr);
@@ -271,17 +288,16 @@ public class LoginWindow implements Runnable {
     }
 
     private void checkIfServer(){
-        String address = ip.getText();
-        String portStr = port.getText();
-        String userNameStr = userName.getText();
+        address = ip.getText();
+        portStr = port.getText();
+        userNameStr = userName.getText();
         if (mode.isSelected()){
             if (address.equals("")) {
                 address = "localhost";
             }
             new MonitorGui(Integer.parseInt(portStr));
-
             System.out.println("login action start");
-            loginAction(userNameStr, address, portStr);
+//            loginAction(userNameStr, address, portStr);
         }else {
             loginAction(userNameStr, address, portStr);
         }

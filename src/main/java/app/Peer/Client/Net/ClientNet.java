@@ -87,9 +87,7 @@ public class ClientNet implements Runnable {
         Socket socket = null;
         try {
             socket = new Socket(ipAddr, portNum);
-            System.out.println("socket succ");
             GuiController.get().loginGame();
-            System.out.println("Gui succ");
             threadForSocket = new ThreadFactoryBuilder()
                     .setNameFormat("Net-pool-%d").build();
             pool = new ThreadPoolExecutor(3,50,0L,TimeUnit.MILLISECONDS,

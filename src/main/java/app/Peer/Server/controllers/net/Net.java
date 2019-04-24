@@ -1,6 +1,7 @@
 package app.Peer.Server.controllers.net;
 
 
+import app.Peer.Client.gui.LoginWindow;
 import app.Peer.Server.controllers.net.blockingqueue.NetGetMsg;
 import app.Peer.Server.controllers.net.blockingqueue.NetPutMsg;
 import app.Protocols.Pack;
@@ -96,6 +97,8 @@ public class Net implements Runnable{
         try {
             server = new ServerSocket(port);
             System.err.println("server complete");
+            LoginWindow loginWindow = LoginWindow.get();
+            loginWindow.loginAction(loginWindow.getUserNameStr(),loginWindow.getAddress(),loginWindow.getPortStr());
             while (flag){
                 client = server.accept();
                 DataOutputStream dataOutputStream = new DataOutputStream(client
