@@ -1,7 +1,10 @@
 package app.Peer.Server.controllers.net;
 
 
+import app.Models.PeerSockets;
 import app.Peer.Client.gui.LoginWindow;
+import app.Peer.Server.BackUp.BackUpTask;
+import app.Peer.Server.BackUp.Scheduler;
 import app.Peer.Server.controllers.net.blockingqueue.NetGetMsg;
 import app.Peer.Server.controllers.net.blockingqueue.NetPutMsg;
 import app.Protocols.Pack;
@@ -11,6 +14,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
@@ -18,6 +22,7 @@ import java.util.logging.Logger;
 public class Net implements Runnable{
     private String tag = "Net";
     private static Logger logger = Logger.getLogger(String.valueOf(Net.class));
+    private ArrayList<PeerSockets> peerSockets; // to store peer sockets
     private final BlockingQueue<Pack> fromCenter;
     private final BlockingQueue<Pack> toCenter;
     private int portNumber = 6666;
@@ -28,12 +33,14 @@ public class Net implements Runnable{
     public Net(BlockingQueue fromNet, BlockingQueue toNet) {
         this.toCenter = fromNet;
         this.fromCenter = toNet;
+        peerSockets = new ArrayList<PeerSockets>();
     }
 
     public Net(BlockingQueue fromNet, BlockingQueue toNet, int portNumber) {
         this.toCenter = fromNet;
         this.fromCenter = toNet;
         this.portNumber=portNumber;
+        peerSockets = new ArrayList<PeerSockets>();
     }
 
     public Hashtable getClientDataHsh() {
@@ -98,9 +105,12 @@ public class Net implements Runnable{
             server = new ServerSocket(port);
             LoginWindow loginWindow = LoginWindow.get();
             loginWindow.loginAction(loginWindow.getUserNameStr(),loginWindow.getAddress(),loginWindow.getPortStr());
-
+            if (clientNumber == 1){
+                new Thread(new Scheduler(fromCenter, peerSockets)).start();
+            }
             while (flag){
                 client = server.accept();
+                peerSockets.add(new PeerSockets(clientNumber, client));
                 DataOutputStream dataOutputStream = new DataOutputStream(client
                             .getOutputStream());
 
@@ -124,12 +134,11 @@ public class Net implements Runnable{
     public void run() {
         threadForSocket = new ThreadFactoryBuilder()
                 .setNameFormat("Net-pool-%d").build();
-        pool = new ThreadPoolExecutor(10,10,0L,TimeUnit.MILLISECONDS,
+        pool = new ThreadPoolExecutor(10,20,0L,TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
         BlockingQueue<Pack> toNetPutMsg = new LinkedBlockingQueue<>();
         pool.execute(new NetGetMsg(fromCenter,clientNameHash));
         pool.execute(new NetPutMsg(toCenter,toNetPutMsg));
         initialServer(portNumber,toNetPutMsg);
-
     }
 }

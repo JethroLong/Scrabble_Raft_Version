@@ -1,11 +1,13 @@
 package app.Peer.Server.controllers.net;
 
 
+import app.Models.PeerSockets;
 import app.Protocols.Pack;
 
 import java.io.DataOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -14,6 +16,7 @@ public class NetSendMsg implements Runnable {
     private Hashtable clientNameTable;
     private Socket client;
     private Pack message;
+    private ArrayList<PeerSockets> peerSockets;
     public NetSendMsg(Pack message, Hashtable clientNameTable) {
         this.message=message;
         this.clientNameTable=clientNameTable;

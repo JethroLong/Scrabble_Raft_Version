@@ -1,6 +1,7 @@
 package app.Peer.Server.controllers.gameEngine;
 
 
+import app.Models.GameState;
 import app.Models.Player;
 import app.Models.Users;
 import app.Peer.Server.controllers.gameEngine.blockingqueque.EnginePutMsg;
@@ -33,6 +34,12 @@ public class GameProcess {
     private int numPass;
     private int gameLoopStartSeq;
     private char[][] board;
+
+    public GameState getGameState() {
+        return gameState;
+    }
+
+    private GameState gameState;
 
 //    private int currentUserID;
 //    private String msg;
@@ -76,6 +83,7 @@ public class GameProcess {
 
 
     public void switchProtocols(int currentUserID, String msg) {
+        gameState = recordGameState();
         ScrabbleProtocol temp = null;
         if (!msg.equals("null")) {
             temp = JSON.parseObject(msg, ScrabbleProtocol.class);
@@ -688,5 +696,9 @@ public class GameProcess {
         }
     }
 
+    private GameState recordGameState(){
+        GameState newState = null;
+        return newState;
+    }
     //method to reset all game parameters
 }

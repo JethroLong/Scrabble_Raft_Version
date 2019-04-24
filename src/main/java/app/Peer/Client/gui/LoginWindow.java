@@ -123,7 +123,7 @@ public class LoginWindow implements Runnable {
         frame.getContentPane().add(port);
         port.setColumns(10);
 
-        mode = new JCheckBox("   Server Mode");
+        mode = new JCheckBox("   Login as leader");
         frame.getContentPane().add(mode);
         mode.setBounds(90, 125, 200, 30);
 

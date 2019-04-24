@@ -4,7 +4,7 @@ import app.Protocols.ScrabbleProtocol;
 
 public class NonGamingProtocol extends ScrabbleProtocol {
     // to server: start, login, logout, invite, inviteResponse
-    // from server: userUpdate, invite, inviteACK --- (possibly inviteMore)
+    // from server: userUpdate, invite, inviteACK
     private String command;
     private String[] userList;
 

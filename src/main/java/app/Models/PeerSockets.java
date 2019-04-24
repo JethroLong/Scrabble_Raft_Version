@@ -6,6 +6,13 @@ public class PeerSockets {
     private int peerID;
     private Socket peerSocket;
 
+    public PeerSockets() {}
+
+    public PeerSockets(int peerID, Socket peerSocket) {
+        this.peerID = peerID;
+        this.peerSocket = peerSocket;
+    }
+
     public int getPeerID() {
         return peerID;
     }
