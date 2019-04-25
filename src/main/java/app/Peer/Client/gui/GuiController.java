@@ -1,8 +1,10 @@
 package app.Peer.Client.gui;
 
 
+import app.Models.GameState;
 import app.Models.Player;
 import app.Models.Users;
+import app.Peer.Server.controllers.gameEngine.GameProcess;
 import app.Protocols.GamingProtocol.BrickPlacing;
 import app.Protocols.GamingProtocol.GamingOperationProtocol;
 import app.Protocols.NonGamingProtocol.NonGamingProtocol;
@@ -15,17 +17,28 @@ public class GuiController {
 
     private int revievePack;
     private String username;
-
     private GameWindow gameWindow;
-
 
     private String status;
     private int seq = -1;
     private String id = new String("None");
 
     private int currentHostID;
-    private volatile static GuiController instance;
 
+    public boolean isLeader() {
+        return isLeader;
+    }
+
+    public void setLeader(boolean leader) {
+        isLeader = leader;
+    }
+
+    private boolean isLeader = false;
+
+    private GameState gameState;
+
+
+    private volatile static GuiController instance;
     public static synchronized GuiController get() {
         if (instance == null) {
             synchronized (GuiController.class) {
@@ -39,6 +52,10 @@ public class GuiController {
         gameWindow.shutDown();
         GameLobbyWindow.get().getFrame().dispose();
         System.exit(0);
+    }
+
+    public void updateLocalGameState(GameState gameState){
+        this.gameState = gameState;
     }
 
     public String getStatus() {
@@ -78,7 +95,7 @@ public class GuiController {
         return seq;
     }
 
-    String getId() {
+    public String getId() {
         return id;
     }
 
@@ -282,6 +299,18 @@ public class GuiController {
 
     public void resetGame(){
         this.seq = -1;
+    }
+
+    public void serverRecovery(){
+        // check if in a game
+        if (gameState.isGameStart()){
+            GameProcess.getInstance().setGameState(gameState);
+            NonGamingProtocol recovery = new NonGamingProtocol();
+            recovery.setCommand("recovery");
+            GuiSender.get().sendToCenter(recovery); // a request for recovery
+        }else{
+            GameProcess.getInstance().setGameState(gameState);
+        }
     }
 }
 

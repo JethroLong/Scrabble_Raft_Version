@@ -3,7 +3,7 @@ package app.Peer.Client.Net.blockingqueue;
 import java.util.concurrent.BlockingQueue;
 
 public class ClientNetPutMsg implements Runnable{
-    private final BlockingQueue<String> toCenter;
+    private final BlockingQueue<String> toCenter; //put msg to center
     private final BlockingQueue<String> fromNetThread;
     private boolean flag = true;
     public ClientNetPutMsg(BlockingQueue<String> toCenter, BlockingQueue<String> fromNetThread) {

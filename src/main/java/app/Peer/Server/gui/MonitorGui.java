@@ -21,16 +21,11 @@ public class MonitorGui {
     private int portNum;
 
     public MonitorGui() {
-        new Thread(new ControlCenter()).start();
         this.portNum = 6666;
+        new Thread(new ControlCenter()).start();
         initialize();
     }
 
-    public MonitorGui(int port) {
-        new Thread(new ControlCenter()).start();
-        this.portNum = port;
-        initialize();
-    }
     private void initialize() {
         frame = new JFrame();
         frame.setBounds(100, 100, 300, 180);
@@ -98,7 +93,7 @@ public class MonitorGui {
             public void actionPerformed(ActionEvent arg0) {
                 try {
                     setClipboardText(Toolkit.getDefaultToolkit().getSystemClipboard(), JSON.toJSONString(new String[]{
-                            InetAddress.getLocalHost().getHostAddress(),String.valueOf(portNum)}, true));
+                            InetAddress.getLocalHost().getHostAddress(), String.valueOf(portNum)}, true));
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }

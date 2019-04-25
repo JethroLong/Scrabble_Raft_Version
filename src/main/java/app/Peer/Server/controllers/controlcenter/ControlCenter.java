@@ -54,7 +54,7 @@ public class ControlCenter implements Runnable{
             pool.execute(Net.getInstance(fromNet,toNet,portNumber));
         }
         pool.execute(GameEngine.getInstance(toEngine,fromEngine));
-        logger.info(tag+" Initial Server Competed");
+        logger.info(tag+" Initial Server Completed");
     }
     @Override
     public void run() {

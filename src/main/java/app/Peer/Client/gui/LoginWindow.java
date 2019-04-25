@@ -1,6 +1,7 @@
 package app.Peer.Client.gui;
 
 import app.Peer.Client.ClientCenter.ClientControlCenter;
+import app.Peer.Client.Net.ClientNet;
 import app.Peer.Server.gui.MonitorGui;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -28,21 +29,37 @@ public class LoginWindow implements Runnable {
     private JTextField port;
     private JCheckBox mode;
     private JTextArea inviteURL;
+    private String address;
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getPortStr() {
+        return portStr;
+    }
+
+    public String getUserNameStr() {
+        return userNameStr;
+    }
+
+    private String portStr;
+    private String userNameStr;
+
 
     public LoginWindow() {
     }
 
-//    public static class LoginWindowHolder {
+    //    public static class LoginWindowHolder {
 //        private static final LoginWindow INSTANCE = new LoginWindow();
 //    }
     private static LoginWindow loginWindow;
 
 
-
     public static final LoginWindow get() {
-        if(loginWindow==null){
-            return loginWindow=new LoginWindow();
-        }else {
+        if (loginWindow == null) {
+            return loginWindow = new LoginWindow();
+        } else {
             return loginWindow;
         }
     }
@@ -65,11 +82,12 @@ public class LoginWindow implements Runnable {
         frame.dispose();
     }
 
-    public void reInitial(){
+    public void reInitial() {
         initialize();
         JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
         this.frame.setVisible(true);
     }
+
     /**
      * Initialize the contents of the frame.
      */
@@ -106,7 +124,7 @@ public class LoginWindow implements Runnable {
         frame.getContentPane().add(port);
         port.setColumns(10);
 
-        mode = new JCheckBox("   Server Mode");
+        mode = new JCheckBox("   Login as leader");
         frame.getContentPane().add(mode);
         mode.setBounds(90, 125, 200, 30);
 
@@ -141,8 +159,8 @@ public class LoginWindow implements Runnable {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 try {
-                    checkIfServer(); // if start server
-                }catch (Exception e) {
+                    checkIfServer(); // if start as server
+                } catch (Exception e) {
                     System.err.println(e.getMessage());
                     JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
                 }
@@ -155,7 +173,7 @@ public class LoginWindow implements Runnable {
             public void actionPerformed(ActionEvent arg0) {
                 try {
                     changeView();
-                }catch (Exception e) {
+                } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
                 }
             }
@@ -175,18 +193,18 @@ public class LoginWindow implements Runnable {
 //        }
 //    }
 
-    void loginAction(String userName, String ipAddr, String portNum) {
-        if(!userName.isEmpty()) {
+    public void loginAction(String userName, String ipAddr, String portNum) {
+        if (!userName.isEmpty()) {
             center.openNet(ipAddr, Integer.parseInt(portNum), userName);
             //clientManager.openSocket(address, portStr, userNameStr);
             GuiController.get().setUserName(userName);
-        }else{
+        } else {
             showDialog("Invalid username, please try again!");
             run();
         }
     }
 
-    public void changeView(){
+    public void changeView() {
         closeWindow();
         frame = new JFrame();
         frame.setBounds(100, 100, 350, 220);
@@ -207,7 +225,7 @@ public class LoginWindow implements Runnable {
         userName.setColumns(10);
 
         inviteURL = new JTextArea();
-        inviteURL.setBounds(125,50,160,80);
+        inviteURL.setBounds(125, 50, 160, 80);
         inviteURL.setLineWrap(true);
         frame.getContentPane().add(inviteURL);
 
@@ -245,8 +263,8 @@ public class LoginWindow implements Runnable {
                 try {
                     //decryption
                     JSONArray inviteURLText = JSON.parseArray(bouncyCastleBase64(inviteURL.getText()));
-                    loginAction(userName.getText(),inviteURLText.getString(0),inviteURLText.getString(1));
-                }catch (Exception e) {
+                    loginAction(userName.getText(), inviteURLText.getString(0), inviteURLText.getString(1));
+                } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
                 }
             }
@@ -264,26 +282,29 @@ public class LoginWindow implements Runnable {
         this.frame.setVisible(true);
     }
 
-    private String bouncyCastleBase64 (String cipher) {
+    private String bouncyCastleBase64(String cipher) {
 
         byte[] decodeBytes = Base64.getDecoder().decode(cipher);
         return new String(decodeBytes);
     }
 
-    private void checkIfServer(){
-        String address = ip.getText();
-        String portStr = port.getText();
-        String userNameStr = userName.getText();
-        if (mode.isSelected()){
-            if (address.equals("")) {
-                address = "localhost";
+    private void checkIfServer() {
+        address = ip.getText();
+        portStr = port.getText();
+        userNameStr = userName.getText();
+        if (mode.isSelected()) {
+            address = "localhost";
+            if (portStr.equals("")) {
+                portStr = "6666";
             }
-            new MonitorGui(Integer.parseInt(portStr));
 
-            System.out.println("login action start");
+            GuiController.get().setLeader(true);
+            new MonitorGui(); //start server process as leader
             loginAction(userNameStr, address, portStr);
-        }else {
+        } else {
+            GuiController.get().setLeader(false);
             loginAction(userNameStr, address, portStr);
+            new MonitorGui(); // start server process
         }
     }
 

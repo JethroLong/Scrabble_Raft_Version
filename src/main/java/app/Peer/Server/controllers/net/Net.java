@@ -1,6 +1,9 @@
 package app.Peer.Server.controllers.net;
 
 
+import app.Models.PeerHosts;
+import app.Peer.Client.gui.GuiController;
+import app.Peer.Server.BackUp.Scheduler;
 import app.Peer.Server.controllers.net.blockingqueue.NetGetMsg;
 import app.Peer.Server.controllers.net.blockingqueue.NetPutMsg;
 import app.Protocols.Pack;
@@ -8,8 +11,10 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
@@ -17,6 +22,12 @@ import java.util.logging.Logger;
 public class Net implements Runnable{
     private String tag = "Net";
     private static Logger logger = Logger.getLogger(String.valueOf(Net.class));
+
+    public ArrayList<PeerHosts> getPeerSockets() {
+        return peerHosts;
+    }
+
+    private ArrayList<PeerHosts> peerHosts; // to store peer hosts
     private final BlockingQueue<Pack> fromCenter;
     private final BlockingQueue<Pack> toCenter;
     private int portNumber = 6666;
@@ -24,15 +35,28 @@ public class Net implements Runnable{
     private ThreadFactory threadForSocket;
     private ExecutorService pool;
 
+    public int getClientNumber() {
+        return clientNumber;
+    }
+
+    public void setClientNumber(int clientNumber) {
+        this.clientNumber = clientNumber;
+    }
+
+    private int clientNumber;
+
+
     public Net(BlockingQueue fromNet, BlockingQueue toNet) {
         this.toCenter = fromNet;
         this.fromCenter = toNet;
+        peerHosts = new ArrayList<PeerHosts>();
     }
 
     public Net(BlockingQueue fromNet, BlockingQueue toNet, int portNumber) {
         this.toCenter = fromNet;
         this.fromCenter = toNet;
         this.portNumber=portNumber;
+        peerHosts = new ArrayList<PeerHosts>();
     }
 
     public Hashtable getClientDataHsh() {
@@ -92,16 +116,36 @@ public class Net implements Runnable{
 
     private void initialServer(int port, BlockingQueue toNetPutMsg){
         Socket client;
-        int clientNumber = 1;
+
+        //check if the peer has an allocated clientID already.
+        if (GuiController.get().getId().equals("None")){
+            clientNumber = 1;
+        }
+
         try {
             server = new ServerSocket(port);
-            System.err.println("server complete");
+//            LoginWindow loginWindow = LoginWindow.get();
+//            loginWindow.loginAction(loginWindow.getUserNameStr(),loginWindow.getAddress(),loginWindow.getPortStr());
+
             while (flag){
+
                 client = server.accept();
+                String clientHost = client.getInetAddress().getHostAddress();
+                if (clientHost.equals("127.0.0.1")){
+                    clientHost = InetAddress.getLocalHost().getHostAddress();
+                }
+                peerHosts.add(new PeerHosts(clientNumber, clientHost));
                 DataOutputStream dataOutputStream = new DataOutputStream(client
                             .getOutputStream());
+
+//                if (GuiController.get().isLeader()){
+//                    new Thread(new Scheduler()).start(); //leader starts back up task
+//                }
+                // UserID -- socket binding && put in hashtable for quick access
                 clientDataHsh.put(client,dataOutputStream);
                 clientNameHash.put(clientNumber++,client);
+
+                // allocate a worker thread for the new client.
                 pool.execute(new NetThread(client,clientDataHsh,clientNameHash,toNetPutMsg,clientNumber-1));
             }
         } catch (IOException e) {
@@ -117,12 +161,11 @@ public class Net implements Runnable{
     public void run() {
         threadForSocket = new ThreadFactoryBuilder()
                 .setNameFormat("Net-pool-%d").build();
-        pool = new ThreadPoolExecutor(10,10,0L,TimeUnit.MILLISECONDS,
+        pool = new ThreadPoolExecutor(10,20,0L,TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
         BlockingQueue<Pack> toNetPutMsg = new LinkedBlockingQueue<>();
         pool.execute(new NetGetMsg(fromCenter,clientNameHash));
         pool.execute(new NetPutMsg(toCenter,toNetPutMsg));
         initialServer(portNumber,toNetPutMsg);
-
     }
 }

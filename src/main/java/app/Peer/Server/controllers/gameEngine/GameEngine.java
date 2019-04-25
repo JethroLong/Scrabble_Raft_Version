@@ -1,6 +1,9 @@
 package app.Peer.Server.controllers.gameEngine;
 
 
+import app.Peer.Client.gui.GuiController;
+import app.Peer.Server.BackUp.GameSateScheduler;
+import app.Peer.Server.BackUp.Scheduler;
 import app.Peer.Server.controllers.gameEngine.blockingqueque.EngineGetMsg;
 import app.Peer.Server.controllers.gameEngine.blockingqueque.EnginePutMsg;
 import app.Protocols.Pack;
@@ -57,11 +60,19 @@ public class GameEngine implements Runnable{
         pool = new ThreadPoolExecutor(2,10,0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
         pool.execute(new EngineGetMsg(fromCenter));
+        startBackup();
         EnginePutMsg.getInstance(toCenter);
 
     }
 
     public void shutdown(){
         flag = false;
+    }
+
+    public void startBackup(){
+        if(GuiController.get().isLeader()){
+            new Thread(new Scheduler()).start();
+            new Thread(new GameSateScheduler()).start();
+        }
     }
 }

@@ -23,7 +23,6 @@ public class ClientControlCenter implements Runnable{
     private ThreadFactory threadForSocket;
     private ExecutorService pool;
 
-
     public ClientControlCenter() {
         this.fromNet = new LinkedBlockingQueue<>();
         toGui = new LinkedBlockingQueue<>();
@@ -39,7 +38,7 @@ public class ClientControlCenter implements Runnable{
                 new LinkedBlockingQueue<Runnable>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
 //        pool.execute(ClientNet.getInstance(fromNet,toNet));
 //        pool.execute(Gui.getInstance(toGui,fromGui));
-        logger.info(tag+" Initial Server Competed");
+        logger.info(tag+" Initial Client Competed");
     }
 
     public void openNet(String ipAddr, int portNum,String username){
