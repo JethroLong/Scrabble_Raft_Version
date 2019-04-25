@@ -305,7 +305,8 @@ public class GuiController {
         // check if in a game
         if (gameState.isGameStart()){
             GameProcess.getInstance().setGameState(gameState);
-            GamingOperationProtocol recovery = new GamingOperationProtocol();
+            NonGamingProtocol recovery = new NonGamingProtocol();
+            recovery.setCommand("recovery");
             GuiSender.get().sendToCenter(recovery); // a request for recovery
         }else{
             GameProcess.getInstance().setGameState(gameState);
