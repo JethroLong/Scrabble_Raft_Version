@@ -1,7 +1,7 @@
 package app.Peer.Server.controllers.net;
 
 
-import app.Models.PeerSockets;
+import app.Models.PeerHosts;
 import app.Protocols.Pack;
 
 import java.io.DataOutputStream;
@@ -16,7 +16,7 @@ public class NetSendMsg implements Runnable {
     private Hashtable clientNameTable;
     private Socket client;
     private Pack message;
-    private ArrayList<PeerSockets> peerSockets;
+    private ArrayList<PeerHosts> peerSockets;
     public NetSendMsg(Pack message, Hashtable clientNameTable) {
         this.message=message;
         this.clientNameTable=clientNameTable;
@@ -24,16 +24,16 @@ public class NetSendMsg implements Runnable {
     @Override
     public void run() {
 
-            if(message.getRecipient()==null){
+            if(message.getRecipient()==null){ // (message) Pack : msg + recipientID
                 if(message.getUserId()==0){
-                    sendBroadcastMsg(message.getMsg());
+                    sendBroadcastMsg(message.getMsg()); //broadcast
                 }else {
-                    sendToPeer(message.getMsg(),message.getUserId());
+                    sendToPeer(message.getMsg(),message.getUserId()); // unicast
                 }
             }else {
                 int peerNum = message.getRecipient().length;
                 for(int i=0;i<peerNum;i++){
-                    sendToPeer(message.getMsg(),message.getRecipient()[i]);
+                    sendToPeer(message.getMsg(),message.getRecipient()[i]); //multi-cast
                 }
             }
 

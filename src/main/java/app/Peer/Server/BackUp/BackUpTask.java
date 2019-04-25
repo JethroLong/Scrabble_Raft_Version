@@ -2,7 +2,7 @@ package app.Peer.Server.BackUp;
 
 
 import app.Models.GameState;
-import app.Models.PeerSockets;
+import app.Models.PeerHosts;
 import app.Peer.Server.controllers.gameEngine.GameProcess;
 import app.Peer.Server.controllers.gameEngine.blockingqueque.EnginePutMsg;
 import app.Peer.Server.controllers.net.Net;
@@ -37,19 +37,19 @@ public class BackUpTask extends TimerTask implements Runnable {
     }
 
     public Pack Packing() {
-        ArrayList<PeerSockets> peerSockets = Net.getInstance().getPeerSockets();
-        if (peerSockets != null) {
-            PeerSockets[] peerSockets_List = new PeerSockets[peerSockets.size()];
-            peerSockets_List = peerSockets.toArray(peerSockets_List);
+        ArrayList<PeerHosts> peerHosts = Net.getInstance().getPeerSockets();
+        if (peerHosts != null) {
+            PeerHosts[] peerHosts_List = new PeerHosts[peerHosts.size()];
+            peerHosts_List = peerHosts.toArray(peerHosts_List);
+
             GameState gameState = GameProcess.getInstance().getGameState();
-            String jsonStr = JSON.toJSONString(new BackupProtocol(gameState, peerSockets_List));
+
+            BackupProtocol backup = new BackupProtocol(gameState, peerHosts_List);
+            backup.setInitialClientID(Net.getInstance().getClientNumber());
+            String jsonStr = JSON.toJSONString(backup);
             return new Pack(0, jsonStr);
         } else {
             return new Pack(0, JSON.toJSONString("No sockets"));
         }
-    }
-
-    public void task() {
-        System.out.println("task at" + scheduledExecutionTime());
     }
 }

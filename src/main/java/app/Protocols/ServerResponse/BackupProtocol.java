@@ -1,7 +1,7 @@
 package app.Protocols.ServerResponse;
 
 import app.Models.GameState;
-import app.Models.PeerSockets;
+import app.Models.PeerHosts;
 import app.Protocols.ScrabbleProtocol;
 
 public class BackupProtocol extends ScrabbleProtocol {
@@ -11,27 +11,32 @@ public class BackupProtocol extends ScrabbleProtocol {
         return gameState;
     }
 
-    public void setGameState(GameState gameState) {
-        this.gameState = gameState;
+    private PeerHosts[] peerHosts;
+
+    public PeerHosts[] getPeerHosts() {
+        return peerHosts;
     }
 
-    public PeerSockets[] getPeerSockets() {
-        return peerSockets;
+    public void setPeerHosts(PeerHosts[] peerHosts) {
+        this.peerHosts = peerHosts;
     }
 
-    public void setPeerSockets(PeerSockets[] peerSockets) {
-        this.peerSockets = peerSockets;
+    public int getInitialClientID() {
+        return initialClientID;
     }
 
-    private PeerSockets[] peerSockets;
+    public void setInitialClientID(int initialClientID) {
+        this.initialClientID = initialClientID;
+    }
 
+    private int initialClientID;
 
     public BackupProtocol(){
         super.setTAG("BackupProtocol");
     }
-    public BackupProtocol(GameState gameState, PeerSockets[] peerSockets){
+    public BackupProtocol(GameState gameState, PeerHosts[] peerHosts){
         super.setTAG("BackupProtocol");
         this.gameState = gameState;
-        this.peerSockets = peerSockets;
+        this.peerHosts = peerHosts;
     }
 }

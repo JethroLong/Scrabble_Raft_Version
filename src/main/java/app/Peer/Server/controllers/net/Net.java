@@ -1,10 +1,8 @@
 package app.Peer.Server.controllers.net;
 
 
-import app.Models.PeerSockets;
+import app.Models.PeerHosts;
 import app.Peer.Client.gui.GuiController;
-import app.Peer.Client.gui.LoginWindow;
-import app.Peer.Server.BackUp.BackUpTask;
 import app.Peer.Server.BackUp.Scheduler;
 import app.Peer.Server.controllers.net.blockingqueue.NetGetMsg;
 import app.Peer.Server.controllers.net.blockingqueue.NetPutMsg;
@@ -24,11 +22,11 @@ public class Net implements Runnable{
     private String tag = "Net";
     private static Logger logger = Logger.getLogger(String.valueOf(Net.class));
 
-    public ArrayList<PeerSockets> getPeerSockets() {
-        return peerSockets;
+    public ArrayList<PeerHosts> getPeerSockets() {
+        return peerHosts;
     }
 
-    private ArrayList<PeerSockets> peerSockets; // to store peer sockets
+    private ArrayList<PeerHosts> peerHosts; // to store peer hosts
     private final BlockingQueue<Pack> fromCenter;
     private final BlockingQueue<Pack> toCenter;
     private int portNumber = 6666;
@@ -36,17 +34,28 @@ public class Net implements Runnable{
     private ThreadFactory threadForSocket;
     private ExecutorService pool;
 
+    public int getClientNumber() {
+        return clientNumber;
+    }
+
+    public void setClientNumber(int clientNumber) {
+        this.clientNumber = clientNumber;
+    }
+
+    private int clientNumber;
+
+
     public Net(BlockingQueue fromNet, BlockingQueue toNet) {
         this.toCenter = fromNet;
         this.fromCenter = toNet;
-        peerSockets = new ArrayList<PeerSockets>();
+        peerHosts = new ArrayList<PeerHosts>();
     }
 
     public Net(BlockingQueue fromNet, BlockingQueue toNet, int portNumber) {
         this.toCenter = fromNet;
         this.fromCenter = toNet;
         this.portNumber=portNumber;
-        peerSockets = new ArrayList<PeerSockets>();
+        peerHosts = new ArrayList<PeerHosts>();
     }
 
     public Hashtable getClientDataHsh() {
@@ -107,24 +116,21 @@ public class Net implements Runnable{
     private void initialServer(int port, BlockingQueue toNetPutMsg){
         Socket client;
 
-        int clientNumber;
-
         //check if the peer has an allocated clientID already.
         if (GuiController.get().getId().equals("None")){
             clientNumber = 1;
-        }else{
-            clientNumber = Integer.parseInt(GuiController.get().getId());
         }
 
         try {
             server = new ServerSocket(port);
-            LoginWindow loginWindow = LoginWindow.get();
-            loginWindow.loginAction(loginWindow.getUserNameStr(),loginWindow.getAddress(),loginWindow.getPortStr());
+//            LoginWindow loginWindow = LoginWindow.get();
+//            loginWindow.loginAction(loginWindow.getUserNameStr(),loginWindow.getAddress(),loginWindow.getPortStr());
 
             while (flag){
 
                 client = server.accept();
-                peerSockets.add(new PeerSockets(clientNumber, client));
+                String clientHost = client.getInetAddress().getHostAddress();
+                peerHosts.add(new PeerHosts(clientNumber, clientHost));
                 DataOutputStream dataOutputStream = new DataOutputStream(client
                             .getOutputStream());
 

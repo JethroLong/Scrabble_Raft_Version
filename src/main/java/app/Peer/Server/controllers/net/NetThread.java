@@ -30,6 +30,8 @@ public class NetThread implements Runnable {
     }
 
     @Override
+
+    // keep listening to one client socket, and read messages and pass it to center
     public void run() {
 //        DataInputStream inputStream;
         BufferedReader inputStream;
@@ -43,6 +45,7 @@ public class NetThread implements Runnable {
                 if(client.isClosed()==false&&client.isConnected()==true){
                     String message = inputStream.readLine();
                     if(message!=null||!message.equals("")){
+                        // toNetPutMsg -- from client to net
                         toNetPutMsg.put(new Pack(clientID,bouncyCastleBase64(message)));
                     }else {
                         flag=false;

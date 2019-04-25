@@ -65,6 +65,8 @@ public class GameProcess {
         userList = new ArrayList<>();
         db = new ConcurrentHashMap<>();
         teams = new ConcurrentHashMap<>();
+        board = new char[BOARD_SIZE][BOARD_SIZE];
+        gameState = new GameState();
     }
 
     //Singleton GameProcess
@@ -699,27 +701,33 @@ public class GameProcess {
     private void updateGameState(){
         gameState.setBoard(board);
         gameState.setAgree(agree);
-        gameState.setDb(db);
+//        gameState.setDb(db);
         gameState.setGameStart(gameStart);
         gameState.setNumPass(numPass);
         gameState.setNumVoted(numVoted);
-        gameState.setTeams(teams);
+//        gameState.setTeams(teams);
         gameState.setWhoseTurn(whoseTurn);
         gameState.setVoteSuccess(voteSuccess);
         gameState.setVoteInitiator(voteInitiator);
         gameState.setPlayersID(playersID); // for multi-cast
 
-        Player[] players = new Player[playerList.size()];
-        players = playerList.toArray(players);
-        gameState.setPlayerList(players);
+        if(playerList != null) {
+            Player[] players = new Player[playerList.size()];
+            players = playerList.toArray(players);
+            gameState.setPlayerList(players);
+        }
+        if(userList != null) {
+            Users[] users = new Users[userList.size()];
+            users = userList.toArray(users);
+            gameState.setUserList(users);
+        }
 
-        Users[] users = new Users[userList.size()];
-        users = userList.toArray(users);
-        gameState.setUserList(users);
-
-        Team[] teams_list = new Team[teamsInWait.size()];
-        for (int i = 0; i < teams_list.length; i++) {
-            teams_list[i] = new Team(teamsInWait.get(i).get(0).getUserID(), teamsInWait.get(i));
+        if(teamsInWait != null) {
+            Team[] teams_list = new Team[teamsInWait.size()];
+            for (int i = 0; i < teams_list.length; i++) {
+                teams_list[i] = new Team(teamsInWait.get(i).get(0).getUserID(), teamsInWait.get(i));
+            }
+            gameState.setTeamsInWait(teams_list);
         }
     }
 

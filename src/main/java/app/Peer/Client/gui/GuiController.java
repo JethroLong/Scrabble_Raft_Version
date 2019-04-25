@@ -1,6 +1,7 @@
 package app.Peer.Client.gui;
 
 
+import app.Models.GameState;
 import app.Models.Player;
 import app.Models.Users;
 import app.Protocols.GamingProtocol.BrickPlacing;
@@ -33,6 +34,9 @@ public class GuiController {
 
     private boolean isLeader = false;
 
+    private GameState gameState;
+
+
     private volatile static GuiController instance;
     public static synchronized GuiController get() {
         if (instance == null) {
@@ -47,6 +51,10 @@ public class GuiController {
         gameWindow.shutDown();
         GameLobbyWindow.get().getFrame().dispose();
         System.exit(0);
+    }
+
+    public void updateLocalGameState(GameState gameState){
+        this.gameState = gameState;
     }
 
     public String getStatus() {

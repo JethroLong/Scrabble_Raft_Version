@@ -1,210 +1,65 @@
 {
-  "peerSockets": [
-    {
-      "peerID": 1,
-      "peerSocket": {
-        "bound": true,
-        "closed": false,
-        "connected": true,
-        "inetAddress": "127.0.0.1",
-        "inputShutdown": false,
-        "inputStream": {
-          "fD": {}
-        },
-        "keepAlive": false,
-        "localAddress": "127.0.0.1",
-        "localPort": 6666,
-        "localSocketAddress": {
-          "address": "127.0.0.1",
-          "port": 6666
-        },
-        "oOBInline": false,
-        "outputShutdown": false,
-        "outputStream": {
-          "fD": {
-            "$ref": "$.peerSockets[0].peerSocket.inputStream.fD"
-          }
-        },
-        "port": 55575,
-        "receiveBufferSize": 408167,
-        "remoteSocketAddress": {
-          "address": "127.0.0.1",
-          "port": 55575
-        },
-        "reuseAddress": true,
-        "sendBufferSize": 146988,
-        "soLinger": -1,
-        "soTimeout": 0,
-        "tcpNoDelay": false,
-        "trafficClass": 0
+  "gameState": {
+    "agree": 0,
+    "board": [
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+    ],
+    "gameHost": 0,
+    "gameStart": false,
+    "numPass": 0,
+    "numVoted": 0,
+    "teamsInWait": [],
+    "userList": [
+      {
+        "numWin": 0,
+        "status": "available",
+        "userID": 1,
+        "userName": "Jethro"
+      },
+      {
+        "numWin": 0,
+        "status": "available",
+        "userID": 3,
+        "userName": "wwww"
       }
+    ],
+    "voteInitiator": 0,
+    "voteSuccess": false,
+    "whoseTurn": 0
+  },
+  "initialClientID": 4,
+  "peerHosts": [
+    {
+      "peerHost": "127.0.0.1",
+      "peerID": 1
     },
     {
-      "peerID": 2,
-      "peerSocket": {
-        "bound": true,
-        "closed": false,
-        "connected": true,
-        "inetAddress": "127.0.0.1",
-        "inputShutdown": false,
-        "inputStream": {
-          "fD": {}
-        },
-        "keepAlive": false,
-        "localAddress": "127.0.0.1",
-        "localPort": 6666,
-        "localSocketAddress": {
-          "address": "127.0.0.1",
-          "port": 6666
-        },
-        "oOBInline": false,
-        "outputShutdown": false,
-        "outputStream": {
-          "fD": {
-            "$ref": "$.peerSockets[1].peerSocket.inputStream.fD"
-          }
-        },
-        "port": 55587,
-        "receiveBufferSize": 408163,
-        "remoteSocketAddress": {
-          "address": "127.0.0.1",
-          "port": 55587
-        },
-        "reuseAddress": true,
-        "sendBufferSize": 146988,
-        "soLinger": -1,
-        "soTimeout": 0,
-        "tcpNoDelay": false,
-        "trafficClass": 0
-      }
+      "peerHost": "10.9.128.219",
+      "peerID": 2
+    },
+    {
+      "peerHost": "10.9.128.219",
+      "peerID": 3
     }
   ],
   "tAG": "BackupProtocol"
-
-
-
-  "peerSockets": [
-    {
-      "peerID": 1,
-      "peerSocket": {
-        "bound": true,
-        "closed": false,
-        "connected": true,
-        "inetAddress": "127.0.0.1",
-        "inputShutdown": false,
-        "inputStream": {
-          "fD": {}
-        },
-        "keepAlive": false,
-        "localAddress": "127.0.0.1",
-        "localPort": 6666,
-        "localSocketAddress": {
-          "address": "127.0.0.1",
-          "port": 6666
-        },
-        "oOBInline": false,
-        "outputShutdown": false,
-        "outputStream": {
-          "fD": {
-            "$ref": "$.peerSockets[0].peerSocket.inputStream.fD"
-          }
-        },
-        "port": 55575,
-        "receiveBufferSize": 408167,
-        "remoteSocketAddress": {
-          "address": "127.0.0.1",
-          "port": 55575
-        },
-        "reuseAddress": true,
-        "sendBufferSize": 146988,
-        "soLinger": -1,
-        "soTimeout": 0,
-        "tcpNoDelay": false,
-        "trafficClass": 0
-      }
-    },
-    {
-      "peerID": 2,
-      "peerSocket": {
-        "bound": true,
-        "closed": false,
-        "connected": true,
-        "inetAddress": "127.0.0.1",
-        "inputShutdown": false,
-        "inputStream": {
-          "fD": {}
-        },
-        "keepAlive": false,
-        "localAddress": "127.0.0.1",
-        "localPort": 6666,
-        "localSocketAddress": {
-          "address": "127.0.0.1",
-          "port": 6666
-        },
-        "oOBInline": false,
-        "outputShutdown": false,
-        "outputStream": {
-          "fD": {
-            "$ref": "$.peerSockets[1].peerSocket.inputStream.fD"
-          }
-        },
-        "port": 55587,
-        "receiveBufferSize": 408163,
-        "remoteSocketAddress": {
-          "address": "127.0.0.1",
-          "port": 55587
-        },
-        "reuseAddress": true,
-        "sendBufferSize": 146988,
-        "soLinger": -1,
-        "soTimeout": 0,
-        "tcpNoDelay": false,
-        "trafficClass": 0
-      }
-    }
-  ],
-  "tAG": "BackupProtocol",
-
-
-  "peerSockets": [
-    {
-      "peerID": 1,
-      "peerSocket": {
-        "bound": true,
-        "closed": false,
-        "connected": true,
-        "inetAddress": "127.0.0.1",
-        "inputShutdown": false,
-        "inputStream": {
-          "fD": {}
-        },
-        "keepAlive": false,
-        "localAddress": "127.0.0.1",
-        "localPort": 6666,
-        "localSocketAddress": {
-          "address": "127.0.0.1",
-          "port": 6666
-        },
-        "oOBInline": false,
-        "outputShutdown": false,
-        "outputStream": {
-          "fD": {
-            "$ref": "$.peerSockets[0].peerSocket.inputStream.fD"
-          }
-        },
-        "port": 55575,
-        "receiveBufferSize": 408167,
-        "remoteSocketAddress": {
-          "address": "127.0.0.1",
-          "port": 55575
-        },
-        "reuseAddress": true,
-        "sendBufferSize": 146988,
-        "soLinger": -1,
-        "soTimeout": 0,
-        "tcpNoDelay": false,
-        "trafficClass": 0
-      }
-    }
-  ],
-  "tAG": "BackupProtocol"
+}

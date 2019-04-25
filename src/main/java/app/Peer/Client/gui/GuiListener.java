@@ -1,12 +1,17 @@
 package app.Peer.Client.gui;
 
 
+import app.Models.GameState;
+import app.Models.PeerHosts;
 import app.Models.Player;
 import app.Models.Users;
+import app.Peer.Client.Net.ClientNet;
 import app.Protocols.ScrabbleProtocol;
 import app.Protocols.ServerResponse.*;
 import com.alibaba.fastjson.JSON;
 
+import java.net.Socket;
+import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 
 public class GuiListener {
@@ -58,8 +63,23 @@ public class GuiListener {
         }
     }
 
-    private void processBackup(String str){
+    private void processBackup(String str) {
+        // update local backups -- GameState & peerSockets
+        BackupProtocol backup = JSON.parseObject(str, BackupProtocol.class);
+        // extract
+        PeerHosts[] peerHosts = backup.getPeerHosts();
+        GameState gameState = backup.getGameState();
+        // update Game state
+        GuiController.get().updateLocalGameState(gameState);
 
+        // convert to array list
+        ArrayList<String> newPeerHosts = new ArrayList<String>();
+        for(PeerHosts peer : peerHosts){
+            newPeerHosts.add(peer.getPeerHost());
+        }
+        // set new peerSockets from server and establish new connections
+        ClientNet.getInstance().setPeerHosts(newPeerHosts);
+        ClientNet.getInstance().connectToNewPeers();
     }
 
     private void processVoteRequest(String str) {
@@ -184,7 +204,18 @@ public class GuiListener {
                 }else{
                     LoginWindow.get().showDialog(errorMsg);
                 }
-                GuiController.get().shutdown();
+//                GuiController.get().shutdown();
+
+//                int newLeaderID = raft election method()
+//                if (GuiController.get().getId() == newLeaderID){
+//                      GuiController.get().setLeader()
+//                      ClientNet.getInstance().setLeaderSocket(leaderSocket);
+//                      ClientNet.getInstance().run();
+
+//                }else{
+//                      ClientNet.getInstance().setLeaderSocket(leaderSocket);
+//                      ClientNet.getInstance().run();
+//                }
                 break;
             default:
                 break;
