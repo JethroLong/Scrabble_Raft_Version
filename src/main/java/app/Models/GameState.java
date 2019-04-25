@@ -1,5 +1,6 @@
 package app.Models;
 
+import app.Protocols.GamingProtocol.GamingOperationProtocol;
 import app.Protocols.Pack;
 
 import java.util.ArrayList;
@@ -21,6 +22,17 @@ public class GameState {
     private Team[] teamsInWait;
     private Player[] playerList;
     private int[] playersID;
+
+    public GamingOperationProtocol getLatestBrickPlacing() {
+        return latestBrickPlacing;
+    }
+
+    public void setLatestBrickPlacing(GamingOperationProtocol latestBrickPlacing) {
+        this.latestBrickPlacing = latestBrickPlacing;
+    }
+
+    private GamingOperationProtocol latestBrickPlacing;
+
 
     public int getGameHost() {
         return gameHost;

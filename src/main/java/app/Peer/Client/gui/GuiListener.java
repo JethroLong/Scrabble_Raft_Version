@@ -206,16 +206,27 @@ public class GuiListener {
                 }
 //                GuiController.get().shutdown();
 
-//                int newLeaderID = raft election method()
+
+//                int newLeaderID = raft election method() // raft algorithm -- leader election
+//                GameState agreedGameState = raft commonsense algorithm -- decide the new State
+//                GuiController.get().updateGameState(agreedGameState);
+//
 //                if (GuiController.get().getId() == newLeaderID){
-//                      GuiController.get().setLeader()
-//                      ClientNet.getInstance().setLeaderSocket(leaderSocket);
-//                      ClientNet.getInstance().run();
+//                      GuiController.get().setLeader(true)  // mark self as new leader
+//                      look up the socket from connectedPeers such that peer.hostAddr == new leader's Address
+//                      ClientNet.getInstance().setLeaderSocket(leaderSocket); //set leaderSocket
+//                      ClientNet.getInstance().run(); // restart net to new leader
+//                      //recover state from backup
+//                      GuiController.get().serverRecovery();
 
 //                }else{
+//                      look up the socket from connectedPeers such that peer.hostAddr == new leader's Address
 //                      ClientNet.getInstance().setLeaderSocket(leaderSocket);
-//                      ClientNet.getInstance().run();
+//                      ClientNet.getInstance().run(); // restart net to new leader
+//                      // peers wait for msg from new leader
 //                }
+
+//
                 break;
             default:
                 break;

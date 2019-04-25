@@ -138,10 +138,10 @@ public class Net implements Runnable{
                 DataOutputStream dataOutputStream = new DataOutputStream(client
                             .getOutputStream());
 
-                if (GuiController.get().isLeader()){
-                    new Thread(new Scheduler()).start(); //leader starts back up task
-                }
-                // UserID distribution
+//                if (GuiController.get().isLeader()){
+//                    new Thread(new Scheduler()).start(); //leader starts back up task
+//                }
+                // UserID -- socket binding && put in hashtable for quick access
                 clientDataHsh.put(client,dataOutputStream);
                 clientNameHash.put(clientNumber++,client);
 

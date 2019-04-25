@@ -6,7 +6,7 @@ import java.util.concurrent.BlockingQueue;
 
 public class NetPutMsg implements Runnable{
     private final BlockingQueue<Pack> toCenter;
-    private final BlockingQueue<Pack> fromNetThread;
+    private final BlockingQueue<Pack> fromNetThread; //toNetPutMsg
     private boolean flag = true;
     public NetPutMsg(BlockingQueue<Pack> toCenter,BlockingQueue<Pack> fromNetThread) {
         this.toCenter = toCenter;

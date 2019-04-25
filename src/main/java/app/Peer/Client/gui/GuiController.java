@@ -4,6 +4,7 @@ package app.Peer.Client.gui;
 import app.Models.GameState;
 import app.Models.Player;
 import app.Models.Users;
+import app.Peer.Server.controllers.gameEngine.GameProcess;
 import app.Protocols.GamingProtocol.BrickPlacing;
 import app.Protocols.GamingProtocol.GamingOperationProtocol;
 import app.Protocols.NonGamingProtocol.NonGamingProtocol;
@@ -298,6 +299,17 @@ public class GuiController {
 
     public void resetGame(){
         this.seq = -1;
+    }
+
+    public void serverRecovery(){
+        // check if in a game
+        if (gameState.isGameStart()){
+            GameProcess.getInstance().setGameState(gameState);
+            GamingOperationProtocol recovery = new GamingOperationProtocol();
+            GuiSender.get().sendToCenter(recovery); // a request for recovery
+        }else{
+            GameProcess.getInstance().setGameState(gameState);
+        }
     }
 }
 

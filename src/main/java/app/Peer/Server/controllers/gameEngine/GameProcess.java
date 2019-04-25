@@ -35,10 +35,15 @@ public class GameProcess {
     private int numPass;
     private int gameLoopStartSeq;
     private char[][] board;
+    private GamingOperationProtocol latestBrickPlacing;
 
     public GameState getGameState() {
         updateGameState();
         return gameState;
+    }
+
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
     }
 
     private GameState gameState;
@@ -109,7 +114,7 @@ public class GameProcess {
     }
 
     private void nonGamingOperation(int currentUserID, NonGamingProtocol nonGamingProtocol) {
-        //command: start,login, logout, invite(inviteOperation, inviteResponse)
+        //command: start,login, logout, invite(inviteOperation, inviteResponse), recovery
         String command = nonGamingProtocol.getCommand();
         String[] userList = nonGamingProtocol.getUserList();
         boolean isAccept = nonGamingProtocol.isInviteAccepted();
@@ -186,7 +191,38 @@ public class GameProcess {
             //Not exist
         }
     }
+    private void recovery(){
+        recoverGlobalParas();
+        userListToClient();
+        if (gameStart){
+            if (voteInitiator == ID_PLACEHOLDER){
+                boardUpdate(playersID);
+            }else{
+                int[] start = latestBrickPlacing.getStartPosition();
+                int[] end = latestBrickPlacing.getEndPosition();
+                voting(voteInitiator,start, end);
+            }
+        }else{
+            userListToClient();
+        }
+    }
 
+    private void voting(int initiator, int[] start, int[] end){
+        boardUpdate(initiator);
+        voteOperation(initiator, start, end);
+        waitVoting();
+
+        voteResult(start, end);
+        gameTurnControl();
+        boardUpdate(initiator);
+
+        //reset voteSuccess
+        voteSuccess = false;
+    }
+
+    private void enableBackup(){
+        GameEngine.getInstance().startBackup();
+    }
 
     private void voteResult(int[] start, int[] end) {
         if ((double) agree / numVoted > 0.5) {
@@ -224,6 +260,7 @@ public class GameProcess {
     }
 
     private void hasVote(int currentUserID, GamingOperationProtocol gamingOperationProtocol) {
+        latestBrickPlacing = gamingOperationProtocol;
         BrickPlacing bp = gamingOperationProtocol.getBrickPlacing();
         int[] start = gamingOperationProtocol.getStartPosition();
         int[] end = gamingOperationProtocol.getEndPosition();
@@ -234,16 +271,8 @@ public class GameProcess {
 
         voteInitiator = currentUserID;
         board[bp.getPosition()[0]][bp.getPosition()[1]] = Character.toUpperCase(bp.getBrick().charAt(0));
-        boardUpdate(currentUserID);
-        voteOperation(currentUserID, start, end);
-        waitVoting();
 
-        voteResult(start, end);
-        gameTurnControl();
-        boardUpdate(currentUserID);
-
-        //reset voteSuccess
-        voteSuccess = false;
+        voting(currentUserID, start, end);
     }
 
     private void hasNotVote(int currentUserID, GamingOperationProtocol gamingOperationProtocol) {
@@ -344,6 +373,8 @@ public class GameProcess {
             case "leave":
                 leaveTeam(currentUserID, hostID);
                 break;
+            case "recovery":
+                recovery();
             default:
                 error(currentUserID, "Unknown Error", "lobby");
                 break;
@@ -710,6 +741,7 @@ public class GameProcess {
         gameState.setVoteSuccess(voteSuccess);
         gameState.setVoteInitiator(voteInitiator);
         gameState.setPlayersID(playersID); // for multi-cast
+        gameState.setLatestBrickPlacing(latestBrickPlacing);
 
         if(playerList != null) {
             Player[] players = new Player[playerList.size()];
@@ -728,6 +760,44 @@ public class GameProcess {
                 teams_list[i] = new Team(teamsInWait.get(i).get(0).getUserID(), teamsInWait.get(i));
             }
             gameState.setTeamsInWait(teams_list);
+        }
+    }
+
+    private void recoverGlobalParas(){
+        board = gameState.getBoard();
+        agree = gameState.getAgree();
+        gameStart = gameState.isGameStart();
+        numPass = gameState.getNumPass();
+        numVoted = gameState.getNumVoted();
+        whoseTurn = gameState.getWhoseTurn();
+        voteInitiator = gameState.getVoteInitiator();
+        voteSuccess = gameState.isVoteSuccess();
+        playersID = gameState.getPlayersID();
+        latestBrickPlacing = gameState.getLatestBrickPlacing();
+
+        if (gameState.getPlayerList() !=null){
+            playerList = new ArrayList<Player>();
+            for (Player player : gameState.getPlayerList()){
+                playerList.add(player);
+            }
+        }
+
+        if (gameState.getUserList() !=null){
+            userList = new ArrayList<Users>();
+            for (Users user : gameState.getUserList()){
+                userList.add(user);
+            }
+        }
+
+        if (gameState.getTeamsInWait() !=null){
+            teamsInWait = new ArrayList<ArrayList<Users>>();
+            for (Team team : gameState.getTeamsInWait()){
+                ArrayList<Users> tempTeam = new ArrayList<Users>();
+                for (Users teamMember : team.getTeamMember()){
+                    tempTeam.add(teamMember);
+                }
+                teamsInWait.add(tempTeam);
+            }
         }
     }
 

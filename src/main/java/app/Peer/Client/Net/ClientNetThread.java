@@ -36,6 +36,7 @@ public class ClientNetThread implements Runnable {
                     if(message==null){
                         flag=false;
                     }else {
+                        // Server Net to client
                         toNetPutMsg.put(bouncyCastleBase64(message));
                     }
 //                Pack msg = new Pack(-1,message);
