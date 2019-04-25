@@ -1,4 +1,4 @@
-package app.Protocols.NonGamingProtocol;
+package app.Protocols.ServerResponse;
 
 import app.Models.GameState;
 import app.Models.PeerSockets;

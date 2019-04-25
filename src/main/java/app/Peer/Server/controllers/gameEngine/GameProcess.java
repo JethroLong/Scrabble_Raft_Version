@@ -3,6 +3,7 @@ package app.Peer.Server.controllers.gameEngine;
 
 import app.Models.GameState;
 import app.Models.Player;
+import app.Models.Team;
 import app.Models.Users;
 import app.Peer.Server.controllers.gameEngine.blockingqueque.EnginePutMsg;
 import app.Protocols.GamingProtocol.BrickPlacing;
@@ -36,6 +37,7 @@ public class GameProcess {
     private char[][] board;
 
     public GameState getGameState() {
+        updateGameState();
         return gameState;
     }
 
@@ -83,7 +85,8 @@ public class GameProcess {
 
 
     public void switchProtocols(int currentUserID, String msg) {
-        gameState = recordGameState();
+//        updateGameState();
+
         ScrabbleProtocol temp = null;
         if (!msg.equals("null")) {
             temp = JSON.parseObject(msg, ScrabbleProtocol.class);
@@ -682,10 +685,7 @@ public class GameProcess {
         userListToClient();
 
         //terminate game, reset parameters
-        gameStart = false;
-        playersID = null;
-        playerList.clear();
-        whoseTurn = INITIAL_SEQ;
+        resetGameParameters();
 
         boardInitiation();
 
@@ -696,9 +696,40 @@ public class GameProcess {
         }
     }
 
-    private GameState recordGameState(){
-        GameState newState = null;
-        return newState;
+    private void updateGameState(){
+        gameState.setBoard(board);
+        gameState.setAgree(agree);
+        gameState.setDb(db);
+        gameState.setGameStart(gameStart);
+        gameState.setNumPass(numPass);
+        gameState.setNumVoted(numVoted);
+        gameState.setTeams(teams);
+        gameState.setWhoseTurn(whoseTurn);
+        gameState.setVoteSuccess(voteSuccess);
+        gameState.setVoteInitiator(voteInitiator);
+        gameState.setPlayersID(playersID); // for multi-cast
+
+        Player[] players = new Player[playerList.size()];
+        players = playerList.toArray(players);
+        gameState.setPlayerList(players);
+
+        Users[] users = new Users[userList.size()];
+        users = userList.toArray(users);
+        gameState.setUserList(users);
+
+        Team[] teams_list = new Team[teamsInWait.size()];
+        for (int i = 0; i < teams_list.length; i++) {
+            teams_list[i] = new Team(teamsInWait.get(i).get(0).getUserID(), teamsInWait.get(i));
+        }
     }
-    //method to reset all game parameters
+
+    private void resetGameParameters(){
+        //terminate game, reset parameters
+        gameStart = false;
+        playersID = null;
+        playerList.clear();
+        whoseTurn = INITIAL_SEQ;
+        boardInitiation();
+    }
+
 }

@@ -15,17 +15,25 @@ public class GuiController {
 
     private int revievePack;
     private String username;
-
     private GameWindow gameWindow;
-
 
     private String status;
     private int seq = -1;
     private String id = new String("None");
 
     private int currentHostID;
-    private volatile static GuiController instance;
 
+    public boolean isLeader() {
+        return isLeader;
+    }
+
+    public void setLeader(boolean leader) {
+        isLeader = leader;
+    }
+
+    private boolean isLeader = false;
+
+    private volatile static GuiController instance;
     public static synchronized GuiController get() {
         if (instance == null) {
             synchronized (GuiController.class) {
@@ -78,7 +86,7 @@ public class GuiController {
         return seq;
     }
 
-    String getId() {
+    public String getId() {
         return id;
     }
 

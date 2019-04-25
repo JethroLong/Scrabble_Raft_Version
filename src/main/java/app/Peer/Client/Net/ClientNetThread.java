@@ -11,7 +11,7 @@ import java.util.Hashtable;
 import java.util.concurrent.BlockingQueue;
 
 public class ClientNetThread implements Runnable {
-    private Socket server;
+    private Socket peerServer;
     private Hashtable clientDataHash;
     private Hashtable clientNameHash;
     private boolean isClientClosed = false;
@@ -19,7 +19,7 @@ public class ClientNetThread implements Runnable {
     private boolean flag = true;
 
     public ClientNetThread(Socket server, BlockingQueue toNetPutMsg) {
-        this.server = server;
+        this.peerServer = server;
         this.toNetPutMsg = toNetPutMsg;
     }
 
@@ -29,9 +29,9 @@ public class ClientNetThread implements Runnable {
         BufferedReader inputStream;
         try {
 
-            inputStream = new BufferedReader(new InputStreamReader(server.getInputStream()));
+            inputStream = new BufferedReader(new InputStreamReader(peerServer.getInputStream()));
             while (flag){
-                if(server.isClosed()==false&&server.isConnected()==true){
+                if(peerServer.isClosed()==false && peerServer.isConnected()==true){
                     String message = inputStream.readLine();
                     if(message==null){
                         flag=false;
@@ -57,7 +57,7 @@ public class ClientNetThread implements Runnable {
     private void closeClient(){
         try {
             toNetPutMsg.put(JSON.toJSONString(new ErrorProtocol("The server has been shutdown", "other")));
-            server.close();
+            peerServer.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

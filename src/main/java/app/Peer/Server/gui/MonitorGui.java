@@ -98,7 +98,7 @@ public class MonitorGui {
             public void actionPerformed(ActionEvent arg0) {
                 try {
                     setClipboardText(Toolkit.getDefaultToolkit().getSystemClipboard(), JSON.toJSONString(new String[]{
-                            InetAddress.getLocalHost().getHostAddress(),String.valueOf(portNum)}, true));
+                            InetAddress.getLocalHost().getHostAddress(), String.valueOf(portNum)}, true));
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }

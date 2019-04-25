@@ -51,9 +51,15 @@ public class GuiListener {
             case "ErrorProtocol":
                 processError(str);
                 break;
+            case "BackupProtocol":
+                processBackup(str);
             default:
                 break;
         }
+    }
+
+    private void processBackup(String str){
+
     }
 
     private void processVoteRequest(String str) {

@@ -49,17 +49,16 @@ public class LoginWindow implements Runnable {
     public LoginWindow() {
     }
 
-//    public static class LoginWindowHolder {
+    //    public static class LoginWindowHolder {
 //        private static final LoginWindow INSTANCE = new LoginWindow();
 //    }
     private static LoginWindow loginWindow;
 
 
-
     public static final LoginWindow get() {
-        if(loginWindow==null){
-            return loginWindow=new LoginWindow();
-        }else {
+        if (loginWindow == null) {
+            return loginWindow = new LoginWindow();
+        } else {
             return loginWindow;
         }
     }
@@ -82,11 +81,12 @@ public class LoginWindow implements Runnable {
         frame.dispose();
     }
 
-    public void reInitial(){
+    public void reInitial() {
         initialize();
         JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
         this.frame.setVisible(true);
     }
+
     /**
      * Initialize the contents of the frame.
      */
@@ -158,8 +158,8 @@ public class LoginWindow implements Runnable {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 try {
-                    checkIfServer(); // if start server
-                }catch (Exception e) {
+                    checkIfServer(); // if start as server
+                } catch (Exception e) {
                     System.err.println(e.getMessage());
                     JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
                 }
@@ -172,7 +172,7 @@ public class LoginWindow implements Runnable {
             public void actionPerformed(ActionEvent arg0) {
                 try {
                     changeView();
-                }catch (Exception e) {
+                } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
                 }
             }
@@ -193,17 +193,17 @@ public class LoginWindow implements Runnable {
 //    }
 
     public void loginAction(String userName, String ipAddr, String portNum) {
-        if(!userName.isEmpty()) {
+        if (!userName.isEmpty()) {
             center.openNet(ipAddr, Integer.parseInt(portNum), userName);
             //clientManager.openSocket(address, portStr, userNameStr);
             GuiController.get().setUserName(userName);
-        }else{
+        } else {
             showDialog("Invalid username, please try again!");
             run();
         }
     }
 
-    public void changeView(){
+    public void changeView() {
         closeWindow();
         frame = new JFrame();
         frame.setBounds(100, 100, 350, 220);
@@ -224,7 +224,7 @@ public class LoginWindow implements Runnable {
         userName.setColumns(10);
 
         inviteURL = new JTextArea();
-        inviteURL.setBounds(125,50,160,80);
+        inviteURL.setBounds(125, 50, 160, 80);
         inviteURL.setLineWrap(true);
         frame.getContentPane().add(inviteURL);
 
@@ -262,8 +262,8 @@ public class LoginWindow implements Runnable {
                 try {
                     //decryption
                     JSONArray inviteURLText = JSON.parseArray(bouncyCastleBase64(inviteURL.getText()));
-                    loginAction(userName.getText(),inviteURLText.getString(0),inviteURLText.getString(1));
-                }catch (Exception e) {
+                    loginAction(userName.getText(), inviteURLText.getString(0), inviteURLText.getString(1));
+                } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
                 }
             }
@@ -281,28 +281,28 @@ public class LoginWindow implements Runnable {
         this.frame.setVisible(true);
     }
 
-    private String bouncyCastleBase64 (String cipher) {
+    private String bouncyCastleBase64(String cipher) {
 
         byte[] decodeBytes = Base64.getDecoder().decode(cipher);
         return new String(decodeBytes);
     }
 
-    private void checkIfServer(){
+    private void checkIfServer() {
         address = ip.getText();
         portStr = port.getText();
         userNameStr = userName.getText();
-        if (mode.isSelected()){
-            if (address.equals("")) {
-                address = "localhost";
-            }
-            if (portStr.equals("")){
+        if (mode.isSelected()) {
+            address = "localhost";
+            if (portStr.equals("")) {
                 portStr = "6666";
             }
-            new MonitorGui(Integer.parseInt(portStr));
+            GuiController.get().setLeader(true);
+            new MonitorGui(Integer.parseInt(portStr)); //start server process as leader
             System.out.println("login action start");
-//            loginAction(userNameStr, address, portStr);
-        }else {
             loginAction(userNameStr, address, portStr);
+        } else {
+            loginAction(userNameStr, address, portStr);
+            new MonitorGui(); // start server process
         }
     }
 

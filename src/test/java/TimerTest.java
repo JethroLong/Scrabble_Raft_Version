@@ -4,6 +4,6 @@ import java.util.Timer;
 
 public class TimerTest {
     public static void main(String[] args) {
-        new Thread(new Scheduler(null, null)).start();
+        new Thread(new Scheduler()).start();
     }
 }

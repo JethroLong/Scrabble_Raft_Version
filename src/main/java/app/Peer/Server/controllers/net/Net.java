@@ -2,6 +2,7 @@ package app.Peer.Server.controllers.net;
 
 
 import app.Models.PeerSockets;
+import app.Peer.Client.gui.GuiController;
 import app.Peer.Client.gui.LoginWindow;
 import app.Peer.Server.BackUp.BackUpTask;
 import app.Peer.Server.BackUp.Scheduler;
@@ -105,19 +106,30 @@ public class Net implements Runnable{
 
     private void initialServer(int port, BlockingQueue toNetPutMsg){
         Socket client;
-        int clientNumber = 1;
+
+        int clientNumber;
+
+        //check if the peer has an allocated clientID already.
+        if (GuiController.get().getId().equals("None")){
+            clientNumber = 1;
+        }else{
+            clientNumber = Integer.parseInt(GuiController.get().getId());
+        }
+
         try {
             server = new ServerSocket(port);
             LoginWindow loginWindow = LoginWindow.get();
             loginWindow.loginAction(loginWindow.getUserNameStr(),loginWindow.getAddress(),loginWindow.getPortStr());
+
             while (flag){
+
                 client = server.accept();
                 peerSockets.add(new PeerSockets(clientNumber, client));
                 DataOutputStream dataOutputStream = new DataOutputStream(client
                             .getOutputStream());
 
-                if (clientNumber == 1){
-                    new Thread(new Scheduler()).start();
+                if (GuiController.get().isLeader()){
+                    new Thread(new Scheduler()).start(); //leader starts back up task
                 }
                 // UserID distribution
                 clientDataHsh.put(client,dataOutputStream);
