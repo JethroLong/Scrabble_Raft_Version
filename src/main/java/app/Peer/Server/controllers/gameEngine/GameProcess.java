@@ -205,6 +205,7 @@ public class GameProcess {
         }else{
             userListToClient();
         }
+        enableBackup();
     }
 
     private void voting(int initiator, int[] start, int[] end){

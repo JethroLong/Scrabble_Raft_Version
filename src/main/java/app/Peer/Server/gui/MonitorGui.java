@@ -26,11 +26,6 @@ public class MonitorGui {
         initialize();
     }
 
-    public MonitorGui(int port) {
-        this.portNum = port;
-        new Thread(new ControlCenter(port)).start();
-        initialize();
-    }
     private void initialize() {
         frame = new JFrame();
         frame.setBounds(100, 100, 300, 180);

@@ -33,28 +33,18 @@
         "numWin": 0,
         "status": "available",
         "userID": 1,
-        "userName": "Jethro"
-      },
-      {
-        "numWin": 0,
-        "status": "available",
-        "userID": 2,
-        "userName": "lkasjd"
+        "userName": "sadqwd"
       }
     ],
     "voteInitiator": 0,
     "voteSuccess": false,
     "whoseTurn": 0
   },
-  "initialClientID": 3,
+  "initialClientID": 2,
   "peerHosts": [
     {
       "peerHost": "10.9.129.22",
       "peerID": 1
-    },
-    {
-      "peerHost": "10.9.129.22",
-      "peerID": 2
     }
   ],
   "tAG": "BackupProtocol"

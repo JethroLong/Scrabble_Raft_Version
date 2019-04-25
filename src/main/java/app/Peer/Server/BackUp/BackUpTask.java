@@ -29,7 +29,7 @@ public class BackUpTask extends TimerTask implements Runnable {
         // send gameState to all
         try {
             Pack temp = Packing();
-            System.out.println("Pack: "+temp);
+            System.out.println("New Backup Pack: "+temp);
             EnginePutMsg.getInstance().putMsgToCenter(temp);
         } catch (Exception e) {
             e.printStackTrace();

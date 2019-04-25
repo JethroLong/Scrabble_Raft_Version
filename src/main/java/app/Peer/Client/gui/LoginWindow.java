@@ -299,7 +299,7 @@ public class LoginWindow implements Runnable {
             }
 
             GuiController.get().setLeader(true);
-            new MonitorGui(Integer.parseInt(portStr)); //start server process as leader
+            new MonitorGui(); //start server process as leader
             loginAction(userNameStr, address, portStr);
         } else {
             GuiController.get().setLeader(false);
