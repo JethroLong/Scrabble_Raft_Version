@@ -38,27 +38,23 @@
       {
         "numWin": 0,
         "status": "available",
-        "userID": 3,
-        "userName": "wwww"
+        "userID": 2,
+        "userName": "lkasjd"
       }
     ],
     "voteInitiator": 0,
     "voteSuccess": false,
     "whoseTurn": 0
   },
-  "initialClientID": 4,
+  "initialClientID": 3,
   "peerHosts": [
     {
-      "peerHost": "127.0.0.1",
+      "peerHost": "10.9.129.22",
       "peerID": 1
     },
     {
-      "peerHost": "10.9.128.219",
+      "peerHost": "10.9.129.22",
       "peerID": 2
-    },
-    {
-      "peerHost": "10.9.128.219",
-      "peerID": 3
     }
   ],
   "tAG": "BackupProtocol"

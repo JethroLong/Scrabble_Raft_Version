@@ -77,7 +77,7 @@ public class GuiListener {
         for(PeerHosts peer : peerHosts){
             newPeerHosts.add(peer.getPeerHost());
         }
-        // set new peerSockets from server and establish new connections
+        // set new peerHosts from server and establish new connections
         ClientNet.getInstance().setPeerHosts(newPeerHosts);
         ClientNet.getInstance().connectToNewPeers();
     }

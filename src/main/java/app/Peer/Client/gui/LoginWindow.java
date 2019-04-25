@@ -1,6 +1,7 @@
 package app.Peer.Client.gui;
 
 import app.Peer.Client.ClientCenter.ClientControlCenter;
+import app.Peer.Client.Net.ClientNet;
 import app.Peer.Server.gui.MonitorGui;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -296,11 +297,12 @@ public class LoginWindow implements Runnable {
             if (portStr.equals("")) {
                 portStr = "6666";
             }
+
             GuiController.get().setLeader(true);
             new MonitorGui(Integer.parseInt(portStr)); //start server process as leader
-            System.out.println("login action start");
             loginAction(userNameStr, address, portStr);
         } else {
+
             loginAction(userNameStr, address, portStr);
             new MonitorGui(); // start server process
         }

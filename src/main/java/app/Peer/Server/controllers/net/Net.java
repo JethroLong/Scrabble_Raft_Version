@@ -11,6 +11,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -130,6 +131,9 @@ public class Net implements Runnable{
 
                 client = server.accept();
                 String clientHost = client.getInetAddress().getHostAddress();
+                if (clientHost.equals("127.0.0.1")){
+                    clientHost = InetAddress.getLocalHost().getHostAddress();
+                }
                 peerHosts.add(new PeerHosts(clientNumber, clientHost));
                 DataOutputStream dataOutputStream = new DataOutputStream(client
                             .getOutputStream());

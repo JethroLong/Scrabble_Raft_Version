@@ -8,8 +8,10 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.concurrent.*;
 
@@ -27,6 +29,15 @@ public class ClientNet implements Runnable {
     private Socket leaderSocket;
     private String userName;
     private ArrayList<String> peerHosts;
+
+    public ArrayList<Socket> getConnectedPeers() {
+        return connectedPeers;
+    }
+
+    public void setConnectedPeers(ArrayList<Socket> connectedPeers) {
+        this.connectedPeers = connectedPeers;
+    }
+
     private ArrayList<Socket> connectedPeers;
 
     public Socket getLeaderSocket() {
@@ -100,6 +111,13 @@ public class ClientNet implements Runnable {
         //extract the hosts of all connected peers
         for(Socket connected : connectedPeers){
             String connectedAddr = connected.getInetAddress().getHostAddress();
+            if (connectedAddr.equals("127.0.0.1")){
+                try {
+                    connectedAddr = InetAddress.getLocalHost().getHostAddress();
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
+            }
             connectedHosts.add(connectedAddr);
         }
 
@@ -108,11 +126,16 @@ public class ClientNet implements Runnable {
         for(String peerHost : peerHosts){
             if (!connectedHosts.contains(peerHost)){
                 try {
+                    System.out.println("new peer detected, start connection");
                     Socket newPeer = new Socket(peerHost, 6666);
+
+                    System.out.println("connection succ! ");
+                    System.out.println(newPeer.getInetAddress().getHostAddress());
+
                     connectedPeers.add(newPeer);
-                    connectedHosts.add(peerHost);
+
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println("peer connection exception");
                 }
             }
         }
@@ -124,20 +147,25 @@ public class ClientNet implements Runnable {
 
     @Override
     public void run() {
-//        Socket socket = null;
+        Socket socket = null;
         try {
             if (leaderSocket == null) {
-                leaderSocket = new Socket(ipAddr, portNum);
-                connectedPeers.add(leaderSocket);
+                socket = new Socket(ipAddr, portNum);
+                connectedPeers.add(socket);
+                if (GuiController.get().isLeader()){
+                    leaderSocket = socket;
+                }
+            }else{
+                socket = leaderSocket;
             }
             GuiController.get().loginGame();
             threadForSocket = new ThreadFactoryBuilder()
                     .setNameFormat("Net-pool-%d").build();
             pool = new ThreadPoolExecutor(3,50,0L,TimeUnit.MILLISECONDS,
                     new LinkedBlockingQueue<Runnable>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
-            pool.execute(new ClientNetGetMsg(fromCenter,leaderSocket));
+            pool.execute(new ClientNetGetMsg(fromCenter,socket));
             pool.execute(new ClientNetPutMsg(toCenter,toNetPutMsg));
-            initialServer(leaderSocket,toNetPutMsg);
+            initialServer(socket,toNetPutMsg);
         } catch (Exception e) {
             System.out.println("I am ClientNet, Help me! Please re-input!");
             net = null;
