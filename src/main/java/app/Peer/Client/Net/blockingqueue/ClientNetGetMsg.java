@@ -26,6 +26,7 @@ public class ClientNetGetMsg implements Runnable{
                 new LinkedBlockingQueue<Runnable>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
     }
 
+
     @Override
     public void run() {
         while (flag){

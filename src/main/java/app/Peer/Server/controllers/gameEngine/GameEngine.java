@@ -19,9 +19,6 @@ public class GameEngine implements Runnable{
     private ExecutorService pool;
 
 
-
-
-
     public GameEngine(BlockingQueue<Pack> toEngine, BlockingQueue<Pack> fromEngine) {
         this.fromCenter = toEngine;
         this.toCenter = fromEngine;

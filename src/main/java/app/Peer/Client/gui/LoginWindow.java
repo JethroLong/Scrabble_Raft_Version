@@ -154,28 +154,23 @@ public class LoginWindow implements Runnable {
                 }
             }
         };
+
         login.addKeyListener(keyListener);
-        login.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                try {
-                    checkIfServer(); // if start as server
-                } catch (Exception e) {
-                    System.err.println(e.getMessage());
-                    JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
-                }
+        login.addActionListener((ActionEvent arg0) -> {
+            try {
+                checkIfServer(); // if start as server
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+                JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
             }
         });
 
         other.addKeyListener(keyListener);
-        other.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                try {
-                    changeView();
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
-                }
+        other.addActionListener((ActionEvent arg0) -> {
+            try {
+                changeView();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
             }
         });
         this.frame.setVisible(true);
@@ -193,6 +188,7 @@ public class LoginWindow implements Runnable {
 //        }
 //    }
 
+    // execute when user click the login button
     public void loginAction(String userName, String ipAddr, String portNum) {
         if (!userName.isEmpty()) {
             center.openNet(ipAddr, Integer.parseInt(portNum), userName);
@@ -257,25 +253,19 @@ public class LoginWindow implements Runnable {
         };
         login.addKeyListener(keyListener);
         back.addKeyListener(keyListener);
-        login.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                try {
-                    //decryption
-                    JSONArray inviteURLText = JSON.parseArray(bouncyCastleBase64(inviteURL.getText()));
-                    loginAction(userName.getText(), inviteURLText.getString(0), inviteURLText.getString(1));
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
-                }
+        login.addActionListener((ActionEvent arg0) -> {
+            try {
+                //decryption
+                JSONArray inviteURLText = JSON.parseArray(bouncyCastleBase64(inviteURL.getText()));
+                loginAction(userName.getText(), inviteURLText.getString(0), inviteURLText.getString(1));
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
             }
         });
 
-        back.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                closeWindow();
-                initialize();
-            }
+        back.addActionListener((ActionEvent arg0) -> {
+            closeWindow();
+            initialize();
         });
 
 

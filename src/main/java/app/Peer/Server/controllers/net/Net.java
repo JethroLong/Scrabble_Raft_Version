@@ -77,10 +77,12 @@ public class Net implements Runnable{
     private ServerSocket server;
 
     private volatile static Net net;
+
     private Net(){
         fromCenter = new LinkedBlockingQueue<>();
         toCenter = new LinkedBlockingQueue<>();
     }
+
     public static Net getInstance(){
         if (net == null){
             synchronized (Net.class){

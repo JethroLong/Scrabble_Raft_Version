@@ -18,13 +18,17 @@ public class ControlCenter implements Runnable{
     private final BlockingQueue<Pack> toEngine;
     private final BlockingQueue<Pack> fromEngine;
     private final BlockingQueue<Pack> toNet;
+    private final BlockingQueue<Pack> toRaft;
+    private final BlockingQueue<Pack> fromRaft;
     private GameEngine gameEngine;
     private int portNumber;
     private boolean flag = true;
     private ThreadFactory threadForSocket;
     private ExecutorService pool;
 
-    public ControlCenter() {
+    private ControlCenter() {
+        this.toRaft = new LinkedBlockingQueue<>();
+        this.fromRaft = new LinkedBlockingQueue<>();
         this.fromNet = new LinkedBlockingQueue<>();
         toEngine = new LinkedBlockingQueue<>();
         fromEngine = new LinkedBlockingQueue<>();
@@ -33,7 +37,9 @@ public class ControlCenter implements Runnable{
         logger.info(tag+" Initial ControlCenter Complete!");
     }
 
-    public ControlCenter(int port) {
+    private ControlCenter(int port) {
+        this.toRaft = new LinkedBlockingQueue<>();
+        this.fromRaft = new LinkedBlockingQueue<>();
         this.fromNet = new LinkedBlockingQueue<>();
         toEngine = new LinkedBlockingQueue<>();
         fromEngine = new LinkedBlockingQueue<>();
@@ -41,6 +47,12 @@ public class ControlCenter implements Runnable{
         portNumber=port;
         initialServer();
         logger.info(tag+" Initial ControlCenter Complete!");
+    }
+
+    private static ControlCenter instance = new ControlCenter();
+
+    public static ControlCenter getInstance() {
+        return instance;
     }
 
     public void initialServer(){
@@ -58,7 +70,7 @@ public class ControlCenter implements Runnable{
     }
     @Override
     public void run() {
-        pool.execute(new CenterGetMsg(fromNet,toEngine,fromEngine,toNet));
+        pool.execute(new CenterGetMsg(fromNet,toEngine,fromEngine,toNet,toRaft)); // from net to to raft or engine
         pool.execute(new CenterPutMsg(fromNet,toEngine,fromEngine,toNet));
     }
 
