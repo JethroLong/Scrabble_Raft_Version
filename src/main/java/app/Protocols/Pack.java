@@ -3,6 +3,12 @@ package app.Protocols;
 public class Pack {
     private int userId;
     private String msg;
+    private int[] recipient;
+
+    public Pack(int userId, String msg) {
+        this.userId = userId;
+        this.msg = msg;
+    }
 
     public int[] getRecipient() {
         return recipient;
@@ -12,8 +18,6 @@ public class Pack {
         this.recipient = recipient;
     }
 
-    private int[] recipient;
-
     public int getUserId() {
         return userId;
     }
@@ -22,8 +26,4 @@ public class Pack {
         return msg;
     }
 
-    public Pack(int userId, String msg) {
-        this.userId = userId;
-        this.msg = msg;
-    }
 }

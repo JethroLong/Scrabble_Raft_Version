@@ -3,17 +3,22 @@ package app.Peer.Server.raft;
 import java.util.Timer;
 
 public class HeartBeatScheduler implements Runnable {
+
     private Timer timer;
 
-    public HeartBeatScheduler() {
+    private HeartBeatScheduler() {
         this.timer = new Timer();
     }
 
-//    private volatile static Scheduler scheduler;
+    private static HeartBeatScheduler instance = new HeartBeatScheduler();
 
+    public static HeartBeatScheduler getInstance() {
+        return instance;
+    }
 
     @Override
     public void run() {
-        //timer.scheduleAtFixedRate(new BackUpTask(),1000,15000);
+        timer.scheduleAtFixedRate(new HeartBeatTask(),1000,15000);
     }
+
 }

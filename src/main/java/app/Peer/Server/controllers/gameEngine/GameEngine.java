@@ -59,7 +59,6 @@ public class GameEngine implements Runnable{
         pool.execute(new EngineGetMsg(fromCenter));
         startBackup();
         EnginePutMsg.getInstance(toCenter);
-
     }
 
     public void shutdown(){
