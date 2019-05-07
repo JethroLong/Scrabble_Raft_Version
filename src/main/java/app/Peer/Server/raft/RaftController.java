@@ -12,17 +12,28 @@ public class RaftController implements Runnable {
     private boolean term = false;
     private ExecutorService pool;
 
-    private static RaftController instance = new RaftController(
-            ControlCenter.getInstance().getToRaft(), ControlCenter.getInstance().getFromRaft());
+    private volatile static RaftController instance;
 
     private RaftController(BlockingQueue<Pack> fromCenter, BlockingQueue<Pack> toCenter) {
         this.fromCenter = fromCenter;
         this.toCenter = toCenter;
     }
 
+    public static RaftController getInstance(BlockingQueue<Pack> fromCenter, BlockingQueue<Pack> toCenter) {
+        if (instance == null) {
+            synchronized (RaftController.class) {
+                if (instance == null) {
+                    instance = new RaftController(fromCenter, toCenter);
+                }
+            }
+        }
+        return instance;
+    }
+
     public static RaftController getInstance() {
         return instance;
     }
+
     /**
      * TO-DO:
      * 接收来自ServerControlCenter的raft相关msg

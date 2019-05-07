@@ -23,7 +23,7 @@ public class MonitorGui {
     public MonitorGui() {
         this.portNum = 6666;
 //        new Thread(new ControlCenter()).start();
-        new Thread(ControlCenter.getInstance()).start();
+        new Thread(ControlCenter.get()).start();
         initialize();
     }
 

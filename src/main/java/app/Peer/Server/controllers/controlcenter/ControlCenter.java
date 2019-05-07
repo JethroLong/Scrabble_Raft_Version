@@ -9,6 +9,7 @@ import app.Peer.Server.raft.RaftController;
 import app.Protocols.Pack;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import javax.swing.*;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
@@ -26,6 +27,8 @@ public class ControlCenter implements Runnable{
     private boolean flag = true;
     private ThreadFactory threadForSocket;
     private ExecutorService pool;
+
+    private volatile static ControlCenter instance;
 
     private ControlCenter() {
         this.toRaft = new LinkedBlockingQueue<>();
@@ -50,18 +53,23 @@ public class ControlCenter implements Runnable{
         logger.info(tag+" Initial ControlCenter Complete!");
     }
 
+    public static ControlCenter get() {
+        if (instance == null) {
+            synchronized (ControlCenter.class) {
+                if (instance == null) {
+                    instance = new ControlCenter();
+                }
+            }
+        }
+        return instance;
+    }
+
     public BlockingQueue<Pack> getToRaft() {
         return toRaft;
     }
 
     public BlockingQueue<Pack> getFromRaft() {
         return fromRaft;
-    }
-
-    private static ControlCenter instance = new ControlCenter();
-
-    public static ControlCenter getInstance() {
-        return instance;
     }
 
     public void initialServer(){
@@ -75,7 +83,7 @@ public class ControlCenter implements Runnable{
             pool.execute(Net.getInstance(fromNet,toNet,portNumber));
         }
         pool.execute(GameEngine.getInstance(toEngine,fromEngine));
-        pool.execute(RaftController.getInstance());
+        pool.execute(RaftController.getInstance(toRaft, fromRaft));
         logger.info(tag+" Initial Server Completed");
     }
     @Override
