@@ -25,7 +25,6 @@ public class CenterGetMsg implements Runnable {
     public void run() {
         while (true){
             try {
-//                toEngine.put(fromNet.take());
                 checkProtocols(fromNet.take());
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -35,7 +34,7 @@ public class CenterGetMsg implements Runnable {
 
     public void checkProtocols(Pack packedMsg) {
         try {
-            ScrabbleProtocol temp = null;
+            ScrabbleProtocol temp;
             String msg = packedMsg.getMsg();
             if (!msg.equals("null")) {
                 temp = JSON.parseObject(msg, ScrabbleProtocol.class);

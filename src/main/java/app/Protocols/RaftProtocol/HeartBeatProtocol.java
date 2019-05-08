@@ -28,10 +28,10 @@ public class HeartBeatProtocol extends ScrabbleProtocol {
 
 
     public HeartBeatProtocol(){
-        super.setTAG("BackupProtocol");
+        super.setTAG("HeartBeatProtocol");
     }
     public HeartBeatProtocol(PeerHosts[] peerHosts){
-        super.setTAG("BackupProtocol");
+        super.setTAG("HeartBeatProtocol");
         this.peerHosts = peerHosts;
         this.heartbeat = "Peng! Peng! Peng!";
     }

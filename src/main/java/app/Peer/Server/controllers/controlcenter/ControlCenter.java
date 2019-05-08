@@ -5,6 +5,7 @@ import app.Peer.Server.controllers.controlcenter.blockingqueue.CenterGetMsg;
 import app.Peer.Server.controllers.controlcenter.blockingqueue.CenterPutMsg;
 import app.Peer.Server.controllers.gameEngine.GameEngine;
 import app.Peer.Server.controllers.net.Net;
+import app.Peer.Server.raft.Blockingqueue.RaftPutMsg;
 import app.Peer.Server.raft.RaftController;
 import app.Protocols.Pack;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -64,13 +65,6 @@ public class ControlCenter implements Runnable{
         return instance;
     }
 
-    public BlockingQueue<Pack> getToRaft() {
-        return toRaft;
-    }
-
-    public BlockingQueue<Pack> getFromRaft() {
-        return fromRaft;
-    }
 
     public void initialServer(){
         threadForSocket = new ThreadFactoryBuilder()
@@ -83,13 +77,13 @@ public class ControlCenter implements Runnable{
             pool.execute(Net.getInstance(fromNet,toNet,portNumber));
         }
         pool.execute(GameEngine.getInstance(toEngine,fromEngine));
-        pool.execute(RaftController.getInstance(toRaft, fromRaft));
+        pool.execute(RaftController.getInstance(toRaft, fromRaft, toNet));
         logger.info(tag+" Initial Server Completed");
     }
     @Override
     public void run() {
         pool.execute(new CenterGetMsg(fromNet,toEngine,toRaft)); // from net to to raft or engine
-        pool.execute(new CenterPutMsg(fromRaft,fromEngine,toNet)); // from raft, engine to net
+        pool.execute(new CenterPutMsg(fromEngine,toNet)); // from raft, engine to net
     }
 
 
