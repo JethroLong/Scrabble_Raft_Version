@@ -37,7 +37,6 @@ public class GuiListener {
     }
 
     public synchronized void addMessage(String str) {
-        System.err.println("MSG FROM S" + str);
         ScrabbleProtocol scrabbleProtocol = JSON.parseObject(str, ScrabbleProtocol.class);
         String tag = scrabbleProtocol.getTAG();
         switch (tag) {
@@ -58,10 +57,23 @@ public class GuiListener {
                 break;
             case "BackupProtocol":
                 processBackup(str);
+                break;
+            case "RaftProtocol":
+                processRaft(str);
             default:
                 break;
         }
     }
+
+    private void processRaft(String str) {
+        // do some when receive raft related msg
+        // case 1: leader request(with newLeaderID)
+        // case 2: heartbeat(use timer)
+        // case 3:
+    }
+
+
+
 
     private void processBackup(String str) {
         // update local backups -- GameState & peerSockets

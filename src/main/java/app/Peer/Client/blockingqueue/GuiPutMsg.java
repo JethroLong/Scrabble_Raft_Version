@@ -38,6 +38,7 @@ public class GuiPutMsg {
 
     public synchronized void putMsgToCenter(String msg){
         try{
+            System.err.println("GuiPutMsg: Send msg to Server: " + msg);
             toCenter.put(msg);
         }catch (InterruptedException e){
             e.printStackTrace();
