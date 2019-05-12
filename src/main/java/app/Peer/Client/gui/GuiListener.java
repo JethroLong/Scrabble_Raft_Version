@@ -6,6 +6,8 @@ import app.Models.PeerHosts;
 import app.Models.Player;
 import app.Models.Users;
 import app.Peer.Client.Net.ClientNet;
+import app.Peer.Server.raft.DetectHeartBeatScheduler;
+import app.Peer.Server.raft.HeartBeatScheduler;
 import app.Protocols.ScrabbleProtocol;
 import app.Protocols.ServerResponse.*;
 import com.alibaba.fastjson.JSON;
@@ -18,7 +20,7 @@ public class GuiListener {
 
     private volatile static GuiListener instance;
     private BlockingQueue<String> queue;
-
+    private DetectHeartBeatScheduler detectHeartBeatScheduler;
     private GuiListener() {
 
     }
@@ -60,6 +62,13 @@ public class GuiListener {
                 break;
             case "RaftProtocol":
                 processRaft(str);
+                break;
+            case "HeartBeatProtocol":
+                processHeartBeat(str);
+                break;
+            case "StartElectionProtocol":
+                System.out.println("Request accepted: "+scrabbleProtocol);
+                break;
             default:
                 break;
         }
@@ -72,7 +81,15 @@ public class GuiListener {
         // case 3:
     }
 
+    private void processHeartBeat(String str){
+        if(detectHeartBeatScheduler == null){
+            this.detectHeartBeatScheduler = new DetectHeartBeatScheduler();
+            detectHeartBeatScheduler.startTask();
+        }else {
+            detectHeartBeatScheduler.restart();
+        }
 
+    }
 
 
     private void processBackup(String str) {

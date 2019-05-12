@@ -62,13 +62,14 @@ public class RaftController implements Runnable {
                 new ThreadPoolExecutor.AbortPolicy());
         pool.execute(new RaftGetMsg(fromCenter));
         pool.execute(new RaftPutMsg(fromRaft, toNet));
-        broatcastHeartBeat();
+        broadcastHeartBeat();
 
     }
 
     // use this method to broadcast msg to all the other peers
     void broadcast(Pack packedMsg) {
         try{
+            System.out.println("xxxxxxxxxxxxxx"+fromRaft);
             fromRaft.put(packedMsg);
         }catch (InterruptedException e){
             e.printStackTrace();
@@ -79,9 +80,9 @@ public class RaftController implements Runnable {
         System.out.println(packedMsg.getMsg());
     }
 
-    public void broatcastHeartBeat() {
+    public void broadcastHeartBeat() {
         if (GuiController.get().isLeader()) {
-            new Thread(HeartBeatScheduler.getInstance()).start();;
+            new Thread(HeartBeatScheduler.getInstance()).start();
         }
     }
 }

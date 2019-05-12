@@ -18,7 +18,7 @@ public class HeartBeatScheduler implements Runnable {
 
     @Override
     public void run() {
-        timer.scheduleAtFixedRate(new HeartBeatTask(),1000,15000);
+        timer.scheduleAtFixedRate(new HeartBeatTask(),1000,4000);
     }
 
 }
