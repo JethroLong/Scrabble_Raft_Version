@@ -97,7 +97,7 @@ public class GuiListener {
             this.detectHeartBeatScheduler = new DetectHeartBeatScheduler();
             detectHeartBeatScheduler.startTask();
         }else {
-            detectHeartBeatScheduler.rest   art();
+            detectHeartBeatScheduler.restart();
         }
 
     }
