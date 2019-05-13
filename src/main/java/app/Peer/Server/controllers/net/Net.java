@@ -30,7 +30,7 @@ public class Net implements Runnable{
     private ArrayList<PeerHosts> peerHosts; // to store peer hosts
     private final BlockingQueue<Pack> fromCenter;
     private final BlockingQueue<Pack> toCenter;
-    private int portNumber = 6666;
+    private int portNumber;
     private boolean flag = true;
     private ThreadFactory threadForSocket;
     private ExecutorService pool;

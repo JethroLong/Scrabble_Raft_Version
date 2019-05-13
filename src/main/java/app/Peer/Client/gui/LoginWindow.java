@@ -306,9 +306,7 @@ public class LoginWindow implements Runnable {
             if (localPortStr.equals("")){
                 localPortStr = "6666";
             }
-            if (leaderPortStr.equals("")) {
-                leaderPortStr = localPortStr;
-            }
+            leaderPortStr = localPortStr;
             GuiController.get().setLocalServerPort(leaderPortStr);
             GuiController.get().setLeader(true);
             new MonitorGui(Integer.parseInt(localPortStr)); //start server process as leader

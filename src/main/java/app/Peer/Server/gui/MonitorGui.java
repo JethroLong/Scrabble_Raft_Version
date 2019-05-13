@@ -29,7 +29,7 @@ public class MonitorGui {
 
     public MonitorGui(int localServerPort){
         this.portNum = localServerPort;
-        new Thread(ControlCenter.get()).start();
+        new Thread(ControlCenter.get(portNum)).start();
         initialize();
     }
 
