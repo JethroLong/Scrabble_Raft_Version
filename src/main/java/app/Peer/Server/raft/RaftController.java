@@ -28,7 +28,17 @@ public class RaftController implements Runnable {
 
     private int term = 0;
     public int getTerm(){return term;}
-    public void setTerm(int term){this.term = term;}
+    public void increaseTerm(){this.term = term++;}
+
+    private int voteCount = 0;
+    public int getVoteCount(){return this.voteCount;}
+    public void increaseVoteCount(){this.voteCount++;}
+    public void resetVoteCount(){this.voteCount = 0;}
+
+    private int ticketCount = 0;
+    public int getTicketCount(){return this.ticketCount;}
+    public void increaseTicketCount(){this.ticketCount++;}
+    public void resetTicketCount(){this.ticketCount = 0;}
 
     // constructor
     private RaftController(BlockingQueue<Pack> toRaft, BlockingQueue<Pack> fromRaft, BlockingQueue<Pack> toNet) {
@@ -86,7 +96,7 @@ public class RaftController implements Runnable {
         // The first parameter should be of any subtype of ScrabbleProtocol.
         // The second parameter could be either:
         // 0 - which lets the net to broadcast the massage to all peers;
-        // userid - which lets the net to unicast the massage to the peer with given userid.
+        // peerId - which lets the net to unicast the massage to the peer with given peerId.
         String jsonStr = JSON.toJSONString(protocol);
         Pack pack = new Pack(recipient, jsonStr);
         try{

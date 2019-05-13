@@ -27,8 +27,11 @@ public class ClientNet implements Runnable {
     private String ipAddr;
     private int portNum;
     private Socket leaderSocket;
+    private int leaderId; // TODO: initial leaderId and pass it.
     private String userName;
     private ArrayList<String> peerHosts;
+    private ArrayList<String> peerIds;
+
 
     public ArrayList<Socket> getConnectedPeers() {
         return connectedPeers;
@@ -48,12 +51,18 @@ public class ClientNet implements Runnable {
         this.leaderSocket = leaderSocket;
     }
 
-    public ArrayList<String> getPeerHosts() {
-        return peerHosts;
-    }
+    public ArrayList<String> getPeerHosts() { return peerHosts; }
+
+    public ArrayList<String> getPeerIds() { return peerIds; }
+
+    public int getLeaderId(){ return leaderId; }
 
     public void setPeerHosts(ArrayList<String> peerHosts) {
         this.peerHosts = peerHosts;
+    }
+
+    public void setPeerIds(ArrayList<String> peerIds) {
+        this.peerIds = peerIds;
     }
 
     public ClientNet(BlockingQueue fromNet, BlockingQueue toNet, String ipAddr, int portNum, String userName) {
@@ -74,6 +83,7 @@ public class ClientNet implements Runnable {
         toCenter = new LinkedBlockingQueue<>();
         toNetPutMsg = new LinkedBlockingQueue<>();
         peerHosts = new ArrayList<String>();
+        peerIds = new ArrayList<String>();
         connectedPeers = new ArrayList<Socket>();
     }
 

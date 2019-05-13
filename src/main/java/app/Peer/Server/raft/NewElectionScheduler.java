@@ -3,12 +3,17 @@ package app.Peer.Server.raft;
 import java.util.Random;
 import java.util.Timer;
 
-public class DetectHeartBeatScheduler {
+public class NewElectionScheduler {
+    /**
+     This class defines a scheduler to detect the failure of the leader based on heartbeat messages
+     and assign the corresponding tasks.
+     **/
+
     private Timer timer;
-    private DetectHeartBeatTask task;
-    public DetectHeartBeatScheduler() {
+    private NewElectionTask task;
+    public NewElectionScheduler(int term) {
         this.timer = new Timer();
-        this.task = new DetectHeartBeatTask();
+        this.task = new NewElectionTask(term);
     }
 
     public void startTask(){
@@ -21,8 +26,10 @@ public class DetectHeartBeatScheduler {
     }
 
     public void restart(){
+        // Cancel the old task and start a new one.
         task.cancel();
-        this.task = new DetectHeartBeatTask();
+        this.task = new NewElectionTask(0);
         startTask();
     }
+
 }

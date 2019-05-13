@@ -7,6 +7,9 @@ import app.Protocols.RaftProtocol.StartElectionProtocol;
 import com.alibaba.fastjson.JSON;
 
 public class ElectionTask {
+    /**
+     This class is used to react to an election request.
+     **/
     private int elector;
     private int candidate;
     private boolean vote;
