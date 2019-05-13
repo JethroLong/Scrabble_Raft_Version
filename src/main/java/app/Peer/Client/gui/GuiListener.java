@@ -5,6 +5,7 @@ import app.Models.GameState;
 import app.Models.PeerHosts;
 import app.Models.Player;
 import app.Models.Users;
+import app.Peer.Client.Gui;
 import app.Peer.Client.Net.ClientNet;
 import app.Peer.Server.raft.DetectHeartBeatScheduler;
 import app.Peer.Server.raft.HeartBeatScheduler;
@@ -95,11 +96,17 @@ public class GuiListener {
     private void processBackup(String str) {
         // update local backups -- GameState & peerSockets
         BackupProtocol backup = JSON.parseObject(str, BackupProtocol.class);
+
         // extract
         PeerHosts[] peerHosts = backup.getPeerHosts();
         GameState gameState = backup.getGameState();
+        int leaderID = backup.getLeaderID();
+
         // update Game state
         GuiController.get().updateLocalGameState(gameState);
+
+        // update leaderID
+        ClientNet.getInstance().setLeaderID(leaderID);
 
         // convert to array list
         ArrayList<PeerHosts> newPeerHosts = new ArrayList<PeerHosts>();
@@ -242,7 +249,7 @@ public class GuiListener {
 //
 //                if (GuiController.get().getId() == newLeaderID){
 //                      GuiController.get().setLeader(true)  // mark self as new leader
-//                      look up the socket from connectedPeers such that peer.hostAddr == new leader's Address
+//                      look up the socket from connectedPeers using peerID
 //                      ClientNet.getInstance().setLeaderSocket(leaderSocket); //set leaderSocket
 //                      ClientNet.getInstance().run(); // restart net to new leader
 //                      //recover state from backup

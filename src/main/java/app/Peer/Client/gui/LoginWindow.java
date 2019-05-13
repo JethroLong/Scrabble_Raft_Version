@@ -32,14 +32,14 @@ public class LoginWindow implements Runnable {
     private JTextField leaderPort;
     private JCheckBox mode;
     private JTextArea inviteURL;
-    private String address;
+    private String leaderAddr;
     private JTextField localPort;
 
-    public String getAddress() {
-        return address;
+    public String getLeaderAddr() {
+        return leaderAddr;
     }
 
-    public String getPortStr() {
+    public String getLeaderPortStr() {
         return leaderPortStr;
     }
 
@@ -293,13 +293,13 @@ public class LoginWindow implements Runnable {
     }
 
     private void checkIfServer() {
-        address = ip.getText();
+        leaderAddr = ip.getText();
         leaderPortStr = leaderPort.getText();
         localPortStr = localPort.getText();
         userNameStr = userName.getText();
         if (mode.isSelected()) {
             try {
-                address = InetAddress.getLocalHost().getHostAddress();
+                leaderAddr = InetAddress.getLocalHost().getHostAddress();
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             }
@@ -310,7 +310,7 @@ public class LoginWindow implements Runnable {
             GuiController.get().setLocalServerPort(leaderPortStr);
             GuiController.get().setLeader(true);
             new MonitorGui(Integer.parseInt(localPortStr)); //start server process as leader
-            loginAction(userNameStr, address, leaderPortStr);
+            loginAction(userNameStr, leaderAddr, leaderPortStr);
         } else {
             int localPortInt = 0;
             if (localPortStr.equals("")){
@@ -322,7 +322,7 @@ public class LoginWindow implements Runnable {
             GuiController.get().setLocalServerPort(localPortStr);
 
             GuiController.get().setLeader(false);
-            loginAction(userNameStr, address, leaderPortStr);
+            loginAction(userNameStr, leaderAddr, leaderPortStr);
             new MonitorGui(localPortInt); // start server process
         }
     }

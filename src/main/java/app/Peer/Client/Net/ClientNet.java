@@ -26,21 +26,32 @@ public class ClientNet implements Runnable {
     private boolean flag = true;
     private ThreadFactory threadForSocket;
     private ExecutorService pool;
+
+    public int getLeaderID() {
+        return leaderID;
+    }
+
+    public void setLeaderID(int leaderID) {
+        this.leaderID = leaderID;
+    }
+
+    private int leaderID;
     private String ipAddr;
     private int portNum;
     private Socket leaderSocket;
     private String userName;
     private ArrayList<PeerHosts> peerHosts;
 
-    public ArrayList<Socket> getConnectedPeers() {
-        return connectedPeers;
+    public ArrayList<Socket> getConnectedPeerSockets() {
+        return connectedPeerSockets;
     }
 
-    public void setConnectedPeers(ArrayList<Socket> connectedPeers) {
-        this.connectedPeers = connectedPeers;
+    public void setConnectedPeerSockets(ArrayList<Socket> connectedPeers) {
+        this.connectedPeerSockets = connectedPeers;
     }
 
-    private ArrayList<Socket> connectedPeers;
+    private ArrayList<Socket> connectedPeerSockets;
+    private ArrayList<PeerHosts> connectedPeerHosts;
 
     public Socket getLeaderSocket() {
         return leaderSocket;
@@ -62,28 +73,31 @@ public class ClientNet implements Runnable {
         this.toCenter = fromNet;
         this.fromCenter = toNet;
         toNetPutMsg = new LinkedBlockingQueue<>();
-        this.ipAddr=ipAddr;
-        this.portNum=portNum;
+        this.ipAddr = ipAddr;
+        this.portNum = portNum;
         peerHosts = new ArrayList<PeerHosts>();
-        connectedPeers = new ArrayList<Socket>();
+        connectedPeerSockets = new ArrayList<Socket>();
+        connectedPeerHosts = new ArrayList<PeerHosts>();
     }
 
     private ServerSocket server;
 
     private volatile static ClientNet net;
-    private ClientNet(){
+
+    private ClientNet() {
         fromCenter = new LinkedBlockingQueue<>();
         toCenter = new LinkedBlockingQueue<>();
         toNetPutMsg = new LinkedBlockingQueue<>();
         peerHosts = new ArrayList<PeerHosts>();
-        connectedPeers = new ArrayList<Socket>();
+        connectedPeerSockets = new ArrayList<Socket>();
+        connectedPeerHosts = new ArrayList<PeerHosts>();
     }
 
 
-    public static ClientNet getInstance(){
-        if (net == null){
-            synchronized (ClientNet.class){
-                if (net == null){
+    public static ClientNet getInstance() {
+        if (net == null) {
+            synchronized (ClientNet.class) {
+                if (net == null) {
                     net = new ClientNet();
                 }
             }
@@ -91,65 +105,79 @@ public class ClientNet implements Runnable {
         return net;
     }
 
-    public static ClientNet getInstance (BlockingQueue fromNet, BlockingQueue toNet,String ipAddr, int portNum,String userName){
-        if (net == null){
-            synchronized (ClientNet.class){
-                if (net == null){
-                    net = new ClientNet(fromNet,toNet,ipAddr,portNum,userName);
+    public static ClientNet getInstance(BlockingQueue fromNet, BlockingQueue toNet, String ipAddr, int portNum, String userName) {
+        if (net == null) {
+            synchronized (ClientNet.class) {
+                if (net == null) {
+                    net = new ClientNet(fromNet, toNet, ipAddr, portNum, userName);
                 }
             }
         }
         return net;
     }
 
-    private void initialServer(Socket leaderSocket, BlockingQueue toNetPutMsg){
-        pool.execute(new ClientNetThread(leaderSocket,toNetPutMsg));
+    private void initialServer(Socket leaderSocket, BlockingQueue toNetPutMsg) {
+        pool.execute(new ClientNetThread(leaderSocket, toNetPutMsg));
     }
 
 
-    public void connectToNewPeers(){
-        ArrayList<String> connectedHosts = new ArrayList<String>();
-
+    public void connectToNewPeers() {
         //extract the hosts of all connected peers
-        for(Socket connected : connectedPeers){
-            String connectedAddr = connected.getInetAddress().getHostAddress();
-            if (connectedAddr.equals("127.0.0.1")){
-                try {
-                    connectedAddr = InetAddress.getLocalHost().getHostAddress();
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                }
-            }
-            connectedHosts.add(connectedAddr);
-        }
 
         //check if the updated peerServers contains new unconnected peers
         // if yes, establish a new connection to the peer (with peer's local server port)
-        for(PeerHosts peerHost : peerHosts){
-            if (!connectedHosts.contains(peerHost.getPeerHost())){
-                try {
-                    System.out.println("new peer detected, start connection");
-                    String addr = peerHost.getPeerHost();
-                    int portNum = Integer.parseInt(peerHost.getPeerPort());
-
-                    Socket newPeer = new Socket(addr, portNum);
-
-                    System.out.println("connection succ! ");
-                    System.out.println(newPeer.getInetAddress().getHostAddress());
-
-                    connectedPeers.add(newPeer);
-
-                    // open new net for new peer
-                    initialServer(newPeer, toNetPutMsg);
-
-                } catch (IOException e) {
-                    System.out.println("peer connection exception");
+//        String localHostAddr = "";
+//        try {
+//            localHostAddr = InetAddress.getLocalHost().getHostAddress();
+//        } catch (Exception e) {
+//
+//        }
+//        String localServerPort = GuiController.get().getLocalServerPort();
+//        String leaderAddr = LoginWindow.get().getLeaderAddr();
+//        String leaderPort = LoginWindow.get().getLeaderPortStr();
+        for (PeerHosts peer : peerHosts) {
+            int count = 0;
+            for(PeerHosts connected : connectedPeerHosts){
+                if(peer.getPeerHost().equals(connected.getPeerHost())
+                && peer.getPeerPort().equals(connected.getPeerPort())){
+                    break;
                 }
+                count++;
             }
+            if(count == connectedPeerHosts.size()){
+                String addr = peer.getPeerHost();
+                int portNum = Integer.parseInt(peer.getPeerPort());
+                System.out.println("new peer detected, start connection");
+                startConnection(addr, portNum);
+            }
+
+//            if (!(peer.getPeerHost().equals(localHostAddr)
+//                    && peer.getPeerPort().equals(localServerPort)
+//                    && !(peer.getPeerHost().equals(leaderAddr)
+//                    && peer.getPeerPort().equals(leaderPort)))) {
+//                System.out.println("new peer detected, start connection");
+//                startConnection(addr, portNum);
+//            }
         }
     }
 
-    public void shutdown(){
+    private void startConnection(String Addr, int port) {
+        try {
+            Socket newPeer = new Socket(Addr, port);
+
+            System.out.println("connection succ! ");
+            connectedPeerHosts.add(new PeerHosts(Addr, Integer.toString(port)));
+            connectedPeerSockets.add(newPeer);
+
+            // open new net for new peer
+            initialServer(newPeer, toNetPutMsg);
+        } catch (IOException e) {
+            System.out.println("peer connection exception");
+        }
+    }
+
+
+    public void shutdown() {
         flag = false;
     }
 
@@ -159,22 +187,23 @@ public class ClientNet implements Runnable {
         try {
             if (leaderSocket == null) {
                 socket = new Socket(ipAddr, portNum);
-                connectedPeers.add(socket);
-                if (GuiController.get().isLeader()){
+                connectedPeerSockets.add(socket);
+                connectedPeerHosts.add(new PeerHosts(ipAddr, Integer.toString(portNum)));
+                if (GuiController.get().isLeader()) {
                     leaderSocket = socket;
                 }
-            }else{
+            } else {
                 socket = leaderSocket;
             }
             String localServerPort = GuiController.get().getLocalServerPort();
             GuiController.get().loginGame(localServerPort);
             threadForSocket = new ThreadFactoryBuilder()
                     .setNameFormat("Net-pool-%d").build();
-            pool = new ThreadPoolExecutor(3,50,0L,TimeUnit.MILLISECONDS,
-                    new LinkedBlockingQueue<Runnable>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
-            pool.execute(new ClientNetGetMsg(fromCenter,socket));
-            pool.execute(new ClientNetPutMsg(toCenter,toNetPutMsg));
-            initialServer(socket,toNetPutMsg);
+            pool = new ThreadPoolExecutor(3, 50, 0L, TimeUnit.MILLISECONDS,
+                    new LinkedBlockingQueue<Runnable>(1024), threadForSocket, new ThreadPoolExecutor.AbortPolicy());
+            pool.execute(new ClientNetGetMsg(fromCenter, socket));
+            pool.execute(new ClientNetPutMsg(toCenter, toNetPutMsg));
+            initialServer(socket, toNetPutMsg);
         } catch (Exception e) {
             System.out.println("I am ClientNet, Help me! Please re-input!");
             net = null;

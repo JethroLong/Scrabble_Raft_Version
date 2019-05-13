@@ -32,6 +32,11 @@ public class PeerHosts {
         this.peerID = peerID;
     }
 
+    public PeerHosts(String peerHost, String peerPort) {
+        this.peerHost = peerHost;
+        this.peerPort = peerPort;
+    }
+
     public String getPeerHost() {
         return peerHost;
     }

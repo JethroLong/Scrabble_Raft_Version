@@ -155,6 +155,14 @@ public class GuiController {
                 LoginWindow.get().showDialog("Welcome!  "+ this.username);
                 runGameLobbyWindow();
                 revievePack++;
+            }else{
+                // set self id to be that from new leader
+                for (Users user : userList) {
+                    if (user.getUserName().equals(this.username)) {
+                        setId(user.getUserID());
+                        break;
+                    }
+                }
             }
 //        gameLobbyWindow.updateUserList(userList);
             synchronized (GameLobbyWindow.get()) {

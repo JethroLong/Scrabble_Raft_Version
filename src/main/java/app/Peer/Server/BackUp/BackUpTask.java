@@ -3,6 +3,7 @@ package app.Peer.Server.BackUp;
 
 import app.Models.GameState;
 import app.Models.PeerHosts;
+import app.Peer.Client.gui.GuiController;
 import app.Peer.Server.controllers.gameEngine.GameProcess;
 import app.Peer.Server.controllers.gameEngine.blockingqueque.EnginePutMsg;
 import app.Peer.Server.controllers.net.Net;
@@ -22,7 +23,6 @@ public class BackUpTask extends TimerTask implements Runnable {
     @Override
     public void run() {
         backUpBcast();
-//        task(); //test case
     }
 
     void backUpBcast() {
@@ -43,7 +43,9 @@ public class BackUpTask extends TimerTask implements Runnable {
 
             GameState gameState = GameProcess.getInstance().getGameState();
 
-            BackupProtocol backup = new BackupProtocol(gameState, peerHosts_List);
+            int leaderID = Integer.parseInt(GuiController.get().getId());
+
+            BackupProtocol backup = new BackupProtocol(gameState, peerHosts_List, leaderID);
 
             //lower down the likelihood that the clientID distribution meets a collision
             backup.setInitialClientID(Net.getInstance().getClientNumber());
