@@ -25,15 +25,13 @@ public class GuiController {
 
     private int currentHostID;
 
+    private boolean isLeader = false;
     public boolean isLeader() {
         return isLeader;
     }
-
     public void setLeader(boolean leader) {
         isLeader = leader;
     }
-
-    private boolean isLeader = false;
 
     private GameState gameState;
 
@@ -98,6 +96,7 @@ public class GuiController {
     public String getId() {
         return id;
     }
+    public int getIntId(){return Integer.parseInt(id);}
 
     private void runGameLobbyWindow() {
         gameWindow = GameWindow.get();

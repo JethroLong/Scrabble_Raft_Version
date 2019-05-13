@@ -24,13 +24,20 @@ public class NetSendMsg implements Runnable {
     @Override
     public void run() {
 
+//            System.err.println("NetSendMsg called");
+//            System.err.println("massage in NetSendMsg: "+message);
             if(message.getRecipient()==null){ // (message) Pack : msg + recipientID
+
+//                System.err.println("GetRecipient null");
                 if(message.getUserId()==0){
+//                    System.err.println("Userid 0, brocasting");
                     sendBroadcastMsg(message.getMsg()); //broadcast
                 }else {
+//                    System.err.println("Unicast");
                     sendToPeer(message.getMsg(),message.getUserId()); // unicast
                 }
             }else {
+//                System.err.println("GetRecipient: "+message.getRecipient());
                 int peerNum = message.getRecipient().length;
                 for(int i=0;i<peerNum;i++){
                     sendToPeer(message.getMsg(),message.getRecipient()[i]); //multi-cast
@@ -43,6 +50,7 @@ public class NetSendMsg implements Runnable {
         synchronized (clientNameTable){
             for(Enumeration enu = clientNameTable.elements(); enu.hasMoreElements();){
                 client = (Socket)enu.nextElement();
+//                System.err.println("SERVER: Connected socket: "+client);
                 sendMsgOperation(msg);
             }
         }
@@ -58,6 +66,8 @@ public class NetSendMsg implements Runnable {
             PrintWriter printWriter = new PrintWriter(new DataOutputStream(client.getOutputStream()));
             printWriter.println(bouncyCastleBase64(msg));
             printWriter.flush();
+//            System.err.println("2: "+client);
+
         } catch (Exception e) {
             System.out.println("Welcome back!");
         }

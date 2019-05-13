@@ -134,6 +134,9 @@ public class ClientNet implements Runnable {
 
                     connectedPeers.add(newPeer);
 
+                    //open new net for new peer
+                    initialServer(newPeer, toNetPutMsg);
+
                 } catch (IOException e) {
                     System.out.println("peer connection exception");
                 }

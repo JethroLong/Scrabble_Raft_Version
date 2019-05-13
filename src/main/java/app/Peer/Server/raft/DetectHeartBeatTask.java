@@ -1,5 +1,6 @@
 package app.Peer.Server.raft;
 
+import app.Peer.Client.gui.GuiController;
 import app.Peer.Client.gui.GuiSender;
 import app.Protocols.Pack;
 import app.Protocols.RaftProtocol.HeartBeatProtocol;
@@ -12,23 +13,20 @@ public class DetectHeartBeatTask extends TimerTask {
     public void run(){
         System.err.println("No heartbeat from leader detected!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 //        GuiSender.get().sendToCenter(new StartElectionProtocol("Start election request."));
-        broadRequest();
+        broadcastRequest();
     }
 
 
-    private void broadRequest() {
+    private void broadcastRequest() {
         try {
-            Pack temp = Packing();
-            System.out.println("New election request: "+temp);
-            RaftController.getInstance().broadcast(temp);
+            // Set my election term to be 0 and broadcast a start-election request.
+            RaftController.getInstance().setTerm(0);
+            StartElectionProtocol msg = new StartElectionProtocol();
+            RaftController.getInstance().sendMsg(msg, 0);;
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    private Pack Packing() {
-        StartElectionProtocol msg = new StartElectionProtocol();
-        String jsonStr = JSON.toJSONString(msg);
-        return new Pack(0, jsonStr);
-    }
+
 
 }

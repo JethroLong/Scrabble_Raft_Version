@@ -15,9 +15,11 @@ public class HeartBeatTask extends TimerTask implements Runnable {
 
     private void broadCastHeartBeat() {
         try {
-            Pack temp = Packing();
-            System.out.println("New HeartBeat Pack: "+temp);
-            RaftController.getInstance().broadcast(temp);
+            HeartBeatProtocol heartbeat = new HeartBeatProtocol("PENG PENG PENG!");
+//            String jsonStr = JSON.toJSONString(heartbeat);
+//            Pack temp = Packing();
+//            System.out.println("New HeartBeat Pack: "+temp);
+            RaftController.getInstance().sendMsg(heartbeat, 0);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -5,9 +5,14 @@ import app.Models.GameState;
 import app.Models.PeerHosts;
 import app.Models.Player;
 import app.Models.Users;
+import app.Peer.Client.Gui;
 import app.Peer.Client.Net.ClientNet;
 import app.Peer.Server.raft.DetectHeartBeatScheduler;
+import app.Peer.Server.raft.ElectionTask;
 import app.Peer.Server.raft.HeartBeatScheduler;
+import app.Peer.Server.raft.RaftController;
+import app.Protocols.Pack;
+import app.Protocols.RaftProtocol.StartElectionProtocol;
 import app.Protocols.ScrabbleProtocol;
 import app.Protocols.ServerResponse.*;
 import com.alibaba.fastjson.JSON;
@@ -41,6 +46,7 @@ public class GuiListener {
     public synchronized void addMessage(String str) {
         ScrabbleProtocol scrabbleProtocol = JSON.parseObject(str, ScrabbleProtocol.class);
         String tag = scrabbleProtocol.getTAG();
+//        System.out.println(tag);
         switch (tag) {
             case "NonGamingResponse":
                 processNonGamingResonse(str);
@@ -67,7 +73,12 @@ public class GuiListener {
                 processHeartBeat(str);
                 break;
             case "StartElectionProtocol":
-                System.out.println("Request accepted: "+scrabbleProtocol);
+//                System.out.println("Request accepted: "+scrabbleProtocol);
+                processElectionRequest(str);
+                break;
+            case "ElectionProtocol":
+//                System.out.println("Request accepted: "+scrabbleProtocol);
+                processElection(str);
                 break;
             default:
                 break;
@@ -86,8 +97,23 @@ public class GuiListener {
             this.detectHeartBeatScheduler = new DetectHeartBeatScheduler();
             detectHeartBeatScheduler.startTask();
         }else {
-            detectHeartBeatScheduler.restart();
+            detectHeartBeatScheduler.rest   art();
         }
+
+    }
+
+
+    private void processElectionRequest(String str){
+        StartElectionProtocol request = JSON.parseObject(str, StartElectionProtocol.class);
+        ElectionTask electionTask = new ElectionTask(GuiController.get().getIntId(), RaftController.getInstance().getTerm());
+        if(request.getTerm() >= RaftController.getInstance().getTerm()){ // If the request has a term at least as large as mine
+            electionTask.vote(request.getCandidate(), true);
+        }else{
+            electionTask.vote(request.getCandidate(), false);
+        }
+    }
+
+    private void processElection(String str){
 
     }
 
@@ -233,6 +259,7 @@ public class GuiListener {
                 }else{
                     LoginWindow.get().showDialog(errorMsg);
                 }
+
 //                GuiController.get().shutdown();
 
 

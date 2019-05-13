@@ -146,7 +146,7 @@ public class Net implements Runnable{
                 // UserID -- socket binding && put in hashtable for quick access
                 clientDataHsh.put(client,dataOutputStream);
                 clientNameHash.put(clientNumber++,client);
-
+                System.err.println("clientName: "+client);
                 // allocate a worker thread for the new client.
                 pool.execute(new NetThread(client,clientDataHsh,clientNameHash,toNetPutMsg,clientNumber-1));
             }
@@ -169,5 +169,6 @@ public class Net implements Runnable{
         pool.execute(new NetGetMsg(fromCenter,clientNameHash));
         pool.execute(new NetPutMsg(toCenter,toNetPutMsg));
         initialServer(portNumber,toNetPutMsg);
+        System.err.println("peerHosts: "+peerHosts);
     }
 }
