@@ -65,6 +65,9 @@ public class ClientNet implements Runnable {
         this.peerIds = peerIds;
     }
 
+    public void setLeaderId(int leaderId) { this.leaderId = leaderId;
+    }
+
     public ClientNet(BlockingQueue fromNet, BlockingQueue toNet, String ipAddr, int portNum, String userName) {
         this.toCenter = fromNet;
         this.fromCenter = toNet;

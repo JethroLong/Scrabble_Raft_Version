@@ -78,6 +78,9 @@ public class GuiListener {
             case "ElectionProtocol":
                 processElection(str);
                 break;
+            case "ElectedProtocol":
+                processElected(str);
+                break;
             // END OF RAFT SECTION
 
             default:
@@ -144,6 +147,16 @@ public class GuiListener {
             NewElectionScheduler newElectionScheduler = new NewElectionScheduler(RaftController.getInstance().getTerm());
             newElectionScheduler.startTask();
         }
+    }
+
+    private void processElected(String str){
+        // This method is used to deal the case that a new leader is elected.
+        ElectedProtocol electedProtocol = JSON.parseObject(str, ElectedProtocol.class);
+        RaftController.getInstance().setStatus("FOLLOWER");
+        ClientNet.getInstance().setLeaderId(electedProtocol.getNewLeader());
+        RaftController.getInstance().resetVoteCount();
+        RaftController.getInstance().resetTicketCount();
+        RaftController.getInstance().setTerm(0);
     }
 
     // END OF RAFT SECTION

@@ -29,6 +29,7 @@ public class RaftController implements Runnable {
     private int term = 0;
     public int getTerm(){return term;}
     public void increaseTerm(){this.term = term++;}
+    public void setTerm(int term){this.term = term;}
 
     private int voteCount = 0;
     public int getVoteCount(){return this.voteCount;}
