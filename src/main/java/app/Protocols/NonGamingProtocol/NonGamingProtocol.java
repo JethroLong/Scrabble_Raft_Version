@@ -33,6 +33,10 @@ public class NonGamingProtocol extends ScrabbleProtocol {
         this.localHostAddress = localHostAddress;
     }
 
+    public void setLocalServerPort(String localServerPort) {
+        this.localServerPort = localServerPort;
+    }
+
     private String localServerPort;
 
     public boolean isInviteAccepted() {

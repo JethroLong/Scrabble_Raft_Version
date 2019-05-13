@@ -29,7 +29,6 @@ public class BackUpTask extends TimerTask implements Runnable {
         // send gameState to all
         try {
             Pack temp = Packing();
-            System.out.println("New Backup Pack: "+temp);
             EnginePutMsg.getInstance().putMsgToCenter(temp);
         } catch (Exception e) {
             e.printStackTrace();
@@ -38,7 +37,7 @@ public class BackUpTask extends TimerTask implements Runnable {
 
     public Pack Packing() {
         ArrayList<PeerHosts> peerHosts = Net.getInstance().getPeerHosts();
-        if (peerHosts != null) {
+        if (peerHosts.size() > 0) {
             PeerHosts[] peerHosts_List = new PeerHosts[peerHosts.size()];
             peerHosts_List = peerHosts.toArray(peerHosts_List);
 

@@ -18,7 +18,7 @@ public class PeerHosts {
 
     public PeerHosts() {}
 
-    public PeerHosts(int peerID, String peerHost,String peerPort) {
+    public PeerHosts(int peerID, String peerHost, String peerPort) {
         this.peerID = peerID;
         this.peerHost = peerHost;
         this.peerPort = peerPort;

@@ -126,7 +126,7 @@ public class ClientNet implements Runnable {
         //check if the updated peerServers contains new unconnected peers
         // if yes, establish a new connection to the peer (with peer's local server port)
         for(PeerHosts peerHost : peerHosts){
-            if (!connectedHosts.contains(peerHost)){
+            if (!connectedHosts.contains(peerHost.getPeerHost())){
                 try {
                     System.out.println("new peer detected, start connection");
                     String addr = peerHost.getPeerHost();

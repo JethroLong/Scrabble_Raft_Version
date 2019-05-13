@@ -316,6 +316,8 @@ public class LoginWindow implements Runnable {
             if (localPortStr.equals("")){
                 localPortInt = (int)(Math.random() * (65535 - 1023) + 1024);
                 localPortStr = Integer.toString(localPortInt);
+            }else{
+                localPortInt = Integer.parseInt(localPortStr);
             }
             GuiController.get().setLocalServerPort(localPortStr);
 

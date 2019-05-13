@@ -99,7 +99,8 @@ public class GameProcess {
             String type = temp.getTAG();
             switch (type) {
                 case "NonGamingProtocol":
-                    nonGamingOperation(currentUserID, JSON.parseObject(msg, NonGamingProtocol.class));
+                    NonGamingProtocol parsedObj = JSON.parseObject(msg, NonGamingProtocol.class);
+                    nonGamingOperation(currentUserID, parsedObj);
                     break;
                 case "GamingOperationProtocol":
                     gamingOperation(currentUserID, JSON.parseObject(msg, GamingOperationProtocol.class));
@@ -116,6 +117,7 @@ public class GameProcess {
         //command: start,login, logout, invite(inviteOperation, inviteResponse), recovery
         String command = nonGamingProtocol.getCommand();
         String[] userList = nonGamingProtocol.getUserList();
+
         String clientHost = nonGamingProtocol.getLocalHostAddress();
         String clientLocalServerPort = nonGamingProtocol.getLocalServerPort();
 
