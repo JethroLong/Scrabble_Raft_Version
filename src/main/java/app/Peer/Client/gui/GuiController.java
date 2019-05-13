@@ -10,14 +10,33 @@ import app.Protocols.GamingProtocol.GamingOperationProtocol;
 import app.Protocols.NonGamingProtocol.NonGamingProtocol;
 import com.alibaba.fastjson.JSON;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 public class GuiController {
     public GuiController() {
         this.revievePack = -1;
+        try {
+            this.localHostAddress = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
     private int revievePack;
     private String username;
     private GameWindow gameWindow;
+
+    public String getLocalServerPort() {
+        return localServerPort;
+    }
+
+    public void setLocalServerPort(String localServerPort) {
+        this.localServerPort = localServerPort;
+    }
+
+    private String localServerPort;
+    private String localHostAddress;
 
     private String status;
     private int seq = -1;
@@ -201,10 +220,10 @@ public class GuiController {
         Send to Center
      */
 
-    public void loginGame() {
+    public void loginGame(String localServerPort) {
         String[] selfArray = new String[1];
         selfArray[0] = username;
-        NonGamingProtocol nonGamingProtocol = new NonGamingProtocol("login", selfArray);
+        NonGamingProtocol nonGamingProtocol = new NonGamingProtocol("login", selfArray, localServerPort, this.localHostAddress);
         GuiSender.get().sendToCenter(nonGamingProtocol);
     }
 

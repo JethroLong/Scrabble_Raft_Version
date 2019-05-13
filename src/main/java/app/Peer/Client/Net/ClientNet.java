@@ -1,5 +1,7 @@
 package app.Peer.Client.Net;
 
+import app.Models.PeerHosts;
+import app.Peer.Client.Gui;
 import app.Peer.Client.Net.blockingqueue.ClientNetGetMsg;
 import app.Peer.Client.Net.blockingqueue.ClientNetPutMsg;
 import app.Peer.Client.gui.GuiController;
@@ -28,7 +30,7 @@ public class ClientNet implements Runnable {
     private int portNum;
     private Socket leaderSocket;
     private String userName;
-    private ArrayList<String> peerHosts;
+    private ArrayList<PeerHosts> peerHosts;
 
     public ArrayList<Socket> getConnectedPeers() {
         return connectedPeers;
@@ -48,11 +50,11 @@ public class ClientNet implements Runnable {
         this.leaderSocket = leaderSocket;
     }
 
-    public ArrayList<String> getPeerHosts() {
+    public ArrayList<PeerHosts> getPeerHosts() {
         return peerHosts;
     }
 
-    public void setPeerHosts(ArrayList<String> peerHosts) {
+    public void setPeerHosts(ArrayList<PeerHosts> peerHosts) {
         this.peerHosts = peerHosts;
     }
 
@@ -62,7 +64,7 @@ public class ClientNet implements Runnable {
         toNetPutMsg = new LinkedBlockingQueue<>();
         this.ipAddr=ipAddr;
         this.portNum=portNum;
-        peerHosts = new ArrayList<String>();
+        peerHosts = new ArrayList<PeerHosts>();
         connectedPeers = new ArrayList<Socket>();
     }
 
@@ -73,7 +75,7 @@ public class ClientNet implements Runnable {
         fromCenter = new LinkedBlockingQueue<>();
         toCenter = new LinkedBlockingQueue<>();
         toNetPutMsg = new LinkedBlockingQueue<>();
-        peerHosts = new ArrayList<String>();
+        peerHosts = new ArrayList<PeerHosts>();
         connectedPeers = new ArrayList<Socket>();
     }
 
@@ -122,17 +124,23 @@ public class ClientNet implements Runnable {
         }
 
         //check if the updated peerServers contains new unconnected peers
-        // if yes, establish a new connection to the peer (default port 6666)
-        for(String peerHost : peerHosts){
+        // if yes, establish a new connection to the peer (with peer's local server port)
+        for(PeerHosts peerHost : peerHosts){
             if (!connectedHosts.contains(peerHost)){
                 try {
                     System.out.println("new peer detected, start connection");
-                    Socket newPeer = new Socket(peerHost, 6666);
+                    String addr = peerHost.getPeerHost();
+                    int portNum = Integer.parseInt(peerHost.getPeerPort());
+
+                    Socket newPeer = new Socket(addr, portNum);
 
                     System.out.println("connection succ! ");
                     System.out.println(newPeer.getInetAddress().getHostAddress());
 
                     connectedPeers.add(newPeer);
+
+                    // open new net for new peer
+                    initialServer(newPeer, toNetPutMsg);
 
                 } catch (IOException e) {
                     System.out.println("peer connection exception");
@@ -158,7 +166,8 @@ public class ClientNet implements Runnable {
             }else{
                 socket = leaderSocket;
             }
-            GuiController.get().loginGame();
+            String localServerPort = GuiController.get().getLocalServerPort();
+            GuiController.get().loginGame(localServerPort);
             threadForSocket = new ThreadFactoryBuilder()
                     .setNameFormat("Net-pool-%d").build();
             pool = new ThreadPoolExecutor(3,50,0L,TimeUnit.MILLISECONDS,

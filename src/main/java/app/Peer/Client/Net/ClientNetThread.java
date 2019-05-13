@@ -28,7 +28,6 @@ public class ClientNetThread implements Runnable {
 
         BufferedReader inputStream;
         try {
-
             inputStream = new BufferedReader(new InputStreamReader(peerServer.getInputStream()));
             while (flag){
                 if(peerServer.isClosed()==false && peerServer.isConnected()==true){

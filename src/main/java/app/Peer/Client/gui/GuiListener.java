@@ -102,9 +102,9 @@ public class GuiListener {
         GuiController.get().updateLocalGameState(gameState);
 
         // convert to array list
-        ArrayList<String> newPeerHosts = new ArrayList<String>();
+        ArrayList<PeerHosts> newPeerHosts = new ArrayList<PeerHosts>();
         for(PeerHosts peer : peerHosts){
-            newPeerHosts.add(peer.getPeerHost());
+            newPeerHosts.add(peer);
         }
         // set new peerHosts from server and establish new connections
         ClientNet.getInstance().setPeerHosts(newPeerHosts);

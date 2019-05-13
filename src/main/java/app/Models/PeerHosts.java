@@ -6,11 +6,22 @@ public class PeerHosts {
     private int peerID;
     private String peerHost;
 
+    public String getPeerPort() {
+        return peerPort;
+    }
+
+    public void setPeerPort(String peerPort) {
+        this.peerPort = peerPort;
+    }
+
+    private String peerPort;
+
     public PeerHosts() {}
 
-    public PeerHosts(int peerID, String peerHost) {
+    public PeerHosts(int peerID, String peerHost,String peerPort) {
         this.peerID = peerID;
         this.peerHost = peerHost;
+        this.peerPort = peerPort;
     }
 
     public int getPeerID() {

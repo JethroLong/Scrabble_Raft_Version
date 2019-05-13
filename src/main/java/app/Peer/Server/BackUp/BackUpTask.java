@@ -37,7 +37,7 @@ public class BackUpTask extends TimerTask implements Runnable {
     }
 
     public Pack Packing() {
-        ArrayList<PeerHosts> peerHosts = Net.getInstance().getPeerSockets();
+        ArrayList<PeerHosts> peerHosts = Net.getInstance().getPeerHosts();
         if (peerHosts != null) {
             PeerHosts[] peerHosts_List = new PeerHosts[peerHosts.size()];
             peerHosts_List = peerHosts.toArray(peerHosts_List);
@@ -45,6 +45,7 @@ public class BackUpTask extends TimerTask implements Runnable {
             GameState gameState = GameProcess.getInstance().getGameState();
 
             BackupProtocol backup = new BackupProtocol(gameState, peerHosts_List);
+
             //lower down the likelihood that the clientID distribution meets a collision
             backup.setInitialClientID(Net.getInstance().getClientNumber());
             String jsonStr = JSON.toJSONString(backup);
