@@ -28,8 +28,8 @@ public class NetGetMsg implements Runnable {
             try {
                 Pack message = fromCenter.take();
                 System.err.println("NetGetMsg: send msg: " + message.getMsg());
-                pool.execute(new NetSendMsg(message,clientName));
-                System.err.println("msg sent!");
+
+                pool.execute(new NetSendMsg(message, clientName));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

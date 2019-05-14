@@ -26,20 +26,38 @@ public class RaftController implements Runnable {
         else GuiController.get().setLeader(false);
     }
 
+    // Indicate the current election term.
     private int term = 0;
     public int getTerm(){return term;}
-    public void increaseTerm(){this.term = term++;}
-    public void setTerm(int term){this.term = term;}
+    public void increaseTerm(){
+        this.term = term++;
+        resetTicketCount();
+        resetVoteCount();
+        setHasVoted(false);
+    }
+    public void setTerm(int term){
+        this.term = term;
+        resetTicketCount();
+        resetVoteCount();
+        setHasVoted(false);
+    }
 
+    // A received ElectionProtocol is a ticket.
+    private int ticketCount = 0;
+    public int getTicketCount(){return this.ticketCount;}
+    public void increaseTicketCount(){this.ticketCount++;}
+    public void resetTicketCount(){this.ticketCount = 0;}
+
+    // Counts how many tickets vote for me.
     private int voteCount = 0;
     public int getVoteCount(){return this.voteCount;}
     public void increaseVoteCount(){this.voteCount++;}
     public void resetVoteCount(){this.voteCount = 0;}
 
-    private int ticketCount = 0;
-    public int getTicketCount(){return this.ticketCount;}
-    public void increaseTicketCount(){this.ticketCount++;}
-    public void resetTicketCount(){this.ticketCount = 0;}
+    // Records that whether I have voted or not in a term.
+    private boolean hasVoted = false;
+    public boolean getHasVoted(){return hasVoted;}
+    public void setHasVoted(boolean hasVoted){this.hasVoted = hasVoted;}
 
     // constructor
     private RaftController(BlockingQueue<Pack> toRaft, BlockingQueue<Pack> fromRaft, BlockingQueue<Pack> toNet) {
@@ -111,7 +129,6 @@ public class RaftController implements Runnable {
     // use this method to broadcast msg to all the other peers
     void broadcast(Pack packedMsg) {
         try{
-//            System.out.println("xxxxxxxxxxxxxx"+fromRaft);
             fromRaft.put(packedMsg);
         }catch (InterruptedException e){
             e.printStackTrace();

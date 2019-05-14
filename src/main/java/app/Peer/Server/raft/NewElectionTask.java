@@ -1,5 +1,6 @@
 package app.Peer.Server.raft;
 
+import app.Models.PeerHosts;
 import app.Peer.Client.Net.ClientNet;
 import app.Peer.Client.gui.GuiController;
 import app.Peer.Client.gui.GuiSender;
@@ -13,7 +14,7 @@ import java.util.TimerTask;
 
 public class NewElectionTask extends TimerTask {
     /**
-        This class defines the task a follower should do under the case that the leader has failed.
+        This class defines the tasks a follower should do under the case that the leader has failed.
     **/
     private int term;
     public void run(){
@@ -25,17 +26,14 @@ public class NewElectionTask extends TimerTask {
 
     private void broadcastRequest() {
         try {
-            // Update the connected peer id list. Remove the old leader from it.
-            ArrayList<String> newPeerIds = new ArrayList<>(ClientNet.getInstance().getPeerIds());
-            newPeerIds.remove(ClientNet.getInstance().getLeaderId());
-            ClientNet.getInstance().setPeerIds(newPeerIds);
+            // Update the connected peer hosts list. Remove the old leader from it.
+            ArrayList<PeerHosts> newPeerHosts = new ArrayList<>(ClientNet.getInstance().getPeerHosts());
+            newPeerHosts.removeIf(peerHosts -> peerHosts.getPeerID() == ClientNet.getInstance().getLeaderID());
+            ClientNet.getInstance().setPeerHosts(newPeerHosts);
             // Set my status to be "CANDIDATE", set my election term to be 0,
-            // reset my vote count and ticket count,
             // and broadcast a start-election request.
             RaftController.getInstance().setStatus("CANDIDATE");
             RaftController.getInstance().setTerm(this.term);
-            RaftController.getInstance().resetVoteCount();
-            RaftController.getInstance().resetTicketCount();
             StartElectionProtocol msg = new StartElectionProtocol(
                     RaftController.getInstance().getTerm(),
                     GuiController.get().getIntId());

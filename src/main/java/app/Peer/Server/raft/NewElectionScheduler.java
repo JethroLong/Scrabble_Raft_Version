@@ -16,20 +16,18 @@ public class NewElectionScheduler {
         this.task = new NewElectionTask(term);
     }
 
-    public void startTask(){
-        // Start a timer for the heartbeat messages from the leader.
-        // Every follower should wait at least 7 secs.
-        // After that, wait another random period (between 0 - 5 secs) and broadcast election request to every peer alive.
+    public void startTask(int delay){
         Random rand = new Random();
-        int randomWaitTime = rand.nextInt(5) * 1000; // Obtain a time between [0 - 10] secs.
-        timer.schedule(task,7000+randomWaitTime);
+        int randomWaitTime = rand.nextInt(5) * 1000; // Obtain a time between [0 - 5] secs.
+        System.out.println("Random period: "+randomWaitTime/1000+" secs.");
+        timer.schedule(task,delay * 1000 +randomWaitTime);
     }
 
     public void restart(){
         // Cancel the old task and start a new one.
         task.cancel();
         this.task = new NewElectionTask(0);
-        startTask();
+        startTask(7);
     }
 
 }

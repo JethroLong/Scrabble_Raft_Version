@@ -5,6 +5,7 @@ import app.Models.GameState;
 import app.Models.PeerHosts;
 import app.Models.Player;
 import app.Models.Users;
+import app.Peer.Client.Gui;
 import app.Peer.Client.Net.ClientNet;
 import app.Peer.Server.raft.NewElectionScheduler;
 import app.Peer.Server.raft.ElectionTask;
@@ -72,15 +73,15 @@ public class GuiListener {
             case "HeartBeatProtocol":
                 processHeartBeat();
                 break;
-            case "StartElectionProtocol":
-                processElectionRequest(str);
-                break;
-            case "ElectionProtocol":
-                processElection(str);
-                break;
-            case "ElectedProtocol":
-                processElected(str);
-                break;
+//            case "StartElectionProtocol":
+//                processElectionRequest(str);
+//                break;
+//            case "ElectionProtocol":
+//                processElection(str);
+//                break;
+//            case "ElectedProtocol":
+//                processElected(str);
+//                break;
             // END OF RAFT SECTION
 
             default:
@@ -95,14 +96,19 @@ public class GuiListener {
         // case 3:
     }
 
-    // RAFT SECTION: methods to process Raft algorithms.
+    /** RAFT SECTION: methods to process Raft algorithms. **/
     private void processHeartBeat(){
-        // This method is used to process heartbeat messages:
-        // 1. Start the timertask when receive the heartbeat message for the first time.
-        // 2. Restart the timertask every time after the first time.
+        /**
+            This method is used to process heartbeat messages:
+            1. Start the timertask when receive the heartbeat message for the first time.
+            2. Restart the timertask every time after the first time.
+         **/
         if(newElectionScheduler == null){
+            // Start a timer for the heartbeat messages from the leader.
             this.newElectionScheduler = new NewElectionScheduler(0);
-            newElectionScheduler.startTask();
+            // Every follower should wait at least 7 secs.
+            // After that, wait another random period(between 0 - 5 secs) and broadcast election request to every peer alive.
+            newElectionScheduler.startTask(7);
         }else {
             newElectionScheduler.restart();
         }
@@ -111,13 +117,14 @@ public class GuiListener {
 
 
     private void processElectionRequest(String str){
-        // This method is used to decide whether to vote for a candidate or not.
+        /** This method is used to decide whether to vote for a candidate or not. **/
         StartElectionProtocol request = JSON.parseObject(str, StartElectionProtocol.class);
         ElectionTask electionTask = new ElectionTask(GuiController.get().getIntId(), RaftController.getInstance().getTerm());
         // Check if the request has a term at least as large as mine.
-        if(request.getTerm() >= RaftController.getInstance().getTerm()){
+        if(request.getTerm() >= RaftController.getInstance().getTerm() & !RaftController.getInstance().getHasVoted()){
             // If so, vote for the candidate.
             electionTask.vote(request.getCandidate(), true);
+            RaftController.getInstance().setHasVoted(true);
         }else{
             // If not, do not vote for the candidate.
             electionTask.vote(request.getCandidate(), false);
@@ -125,7 +132,7 @@ public class GuiListener {
     }
 
     private void processElection(String str){
-        // This method is used to determine the result of an election term.
+        /** This method is used to determine the result of an election term. **/
         ElectionProtocol ticket = JSON.parseObject(str, ElectionProtocol.class); // Get the election ticket.
         RaftController.getInstance().increaseTicketCount(); // Increase ticket count.
 
@@ -133,7 +140,7 @@ public class GuiListener {
         if(ticket.isVote()) RaftController.getInstance().increaseVoteCount();
 
         // Get the number of current peers(including myself).
-        int numPeers = ClientNet.getInstance().getPeerIds().size();
+        int numPeers = ClientNet.getInstance().getPeerHosts().size();
 
         if(RaftController.getInstance().getVoteCount() * 2 >= numPeers){
             // If I have got the majority votes, broadcast a elected message and change my status to be "LEADER".
@@ -145,40 +152,43 @@ public class GuiListener {
             // increase my election term, request a new election term.
             RaftController.getInstance().increaseTerm();
             NewElectionScheduler newElectionScheduler = new NewElectionScheduler(RaftController.getInstance().getTerm());
-            newElectionScheduler.startTask();
+            newElectionScheduler.startTask(0);
         }
     }
 
     private void processElected(String str){
-        // This method is used to deal the case that a new leader is elected.
+        /** This method is used to deal the case that a new leader is elected. **/
         ElectedProtocol electedProtocol = JSON.parseObject(str, ElectedProtocol.class);
         RaftController.getInstance().setStatus("FOLLOWER");
-        ClientNet.getInstance().setLeaderId(electedProtocol.getNewLeader());
-        RaftController.getInstance().resetVoteCount();
-        RaftController.getInstance().resetTicketCount();
+        ClientNet.getInstance().setLeaderID(electedProtocol.getNewLeader());
         RaftController.getInstance().setTerm(0);
     }
 
-    // END OF RAFT SECTION
+    /** END OF RAFT SECTION **/
 
     private void processBackup(String str) {
         // update local backups -- GameState & peerSockets
         BackupProtocol backup = JSON.parseObject(str, BackupProtocol.class);
+
         // extract
         PeerHosts[] peerHosts = backup.getPeerHosts();
         GameState gameState = backup.getGameState();
+        int leaderID = backup.getLeaderID();
+
         // update Game state
         GuiController.get().updateLocalGameState(gameState);
 
+        // update leaderID
+        ClientNet.getInstance().setLeaderID(leaderID);
+
         // convert to array list
-        ArrayList<String> newPeerHosts = new ArrayList<String>();
-        ArrayList<String> newPeerIds = new ArrayList<String>();
+
+        ArrayList<PeerHosts> newPeerHosts = new ArrayList<PeerHosts>();
         for(PeerHosts peer : peerHosts){
-            newPeerHosts.add(peer.getPeerHost());
+            newPeerHosts.add(peer);
         }
         // set new peerHosts from server and establish new connections
         ClientNet.getInstance().setPeerHosts(newPeerHosts);
-        ClientNet.getInstance().setPeerIds(newPeerIds);
         ClientNet.getInstance().connectToNewPeers();
     }
 
@@ -314,7 +324,7 @@ public class GuiListener {
 //
 //                if (GuiController.get().getId() == newLeaderID){
 //                      GuiController.get().setLeader(true)  // mark self as new leader
-//                      look up the socket from connectedPeers such that peer.hostAddr == new leader's Address
+//                      look up the socket from connectedPeers using peerID
 //                      ClientNet.getInstance().setLeaderSocket(leaderSocket); //set leaderSocket
 //                      ClientNet.getInstance().run(); // restart net to new leader
 //                      //recover state from backup

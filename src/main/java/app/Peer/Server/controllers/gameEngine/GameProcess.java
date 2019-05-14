@@ -1,11 +1,10 @@
 package app.Peer.Server.controllers.gameEngine;
 
 
-import app.Models.GameState;
-import app.Models.Player;
-import app.Models.Team;
-import app.Models.Users;
+import app.Models.*;
+import app.Peer.Server.controllers.controlcenter.ControlCenter;
 import app.Peer.Server.controllers.gameEngine.blockingqueque.EnginePutMsg;
+import app.Peer.Server.controllers.net.Net;
 import app.Protocols.GamingProtocol.BrickPlacing;
 import app.Protocols.GamingProtocol.GamingOperationProtocol;
 import app.Protocols.NonGamingProtocol.NonGamingProtocol;
@@ -100,7 +99,8 @@ public class GameProcess {
             String type = temp.getTAG();
             switch (type) {
                 case "NonGamingProtocol":
-                    nonGamingOperation(currentUserID, JSON.parseObject(msg, NonGamingProtocol.class));
+                    NonGamingProtocol parsedObj = JSON.parseObject(msg, NonGamingProtocol.class);
+                    nonGamingOperation(currentUserID, parsedObj);
                     break;
                 case "GamingOperationProtocol":
                     gamingOperation(currentUserID, JSON.parseObject(msg, GamingOperationProtocol.class));
@@ -117,10 +117,22 @@ public class GameProcess {
         //command: start,login, logout, invite(inviteOperation, inviteResponse), recovery
         String command = nonGamingProtocol.getCommand();
         String[] userList = nonGamingProtocol.getUserList();
+
+        String clientHost = nonGamingProtocol.getLocalHostAddress();
+        String clientLocalServerPort = nonGamingProtocol.getLocalServerPort();
+
+        // add peer
+        addPeerHost(currentUserID, clientHost, clientLocalServerPort);
         boolean isAccept = nonGamingProtocol.isInviteAccepted();
         int hostID = nonGamingProtocol.getHostID();
         nonGamingOperationExecutor(currentUserID, command, userList, isAccept, hostID);
     }
+
+    private void addPeerHost(int clientNumber, String hostAddr, String port){
+        PeerHosts newPeerHost = new PeerHosts(clientNumber, hostAddr, port);
+        Net.getInstance().getPeerHosts().add(newPeerHost);
+    }
+
 
     private void gamingOperation(int currentUserID, GamingOperationProtocol gamingOperationProtocol) {
         //command: vote, voteResponse, disconnect

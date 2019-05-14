@@ -27,6 +27,12 @@ public class MonitorGui {
         initialize();
     }
 
+    public MonitorGui(int localServerPort){
+        this.portNum = localServerPort;
+        new Thread(ControlCenter.get(portNum)).start();
+        initialize();
+    }
+
     private void initialize() {
         frame = new JFrame();
         frame.setBounds(100, 100, 300, 180);
