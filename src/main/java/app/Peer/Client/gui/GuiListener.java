@@ -13,6 +13,7 @@ import app.Peer.Server.raft.ElectionTask;
 import app.Peer.Server.raft.RaftController;
 import app.Protocols.RaftProtocol.ElectedProtocol;
 import app.Protocols.RaftProtocol.ElectionProtocol;
+import app.Protocols.RaftProtocol.HeartBeatProtocol;
 import app.Protocols.RaftProtocol.StartElectionProtocol;
 import app.Protocols.ScrabbleProtocol;
 import app.Protocols.ServerResponse.*;
@@ -72,7 +73,7 @@ public class GuiListener {
                 processRaft(str);
                 break;
             case "HeartBeatProtocol":
-                processHeartBeat();
+                processHeartBeat(str);
                 break;
             case "StartElectionProtocol":
                 processElectionRequest(str);
@@ -98,12 +99,15 @@ public class GuiListener {
     }
 
     /** RAFT SECTION: methods to process Raft algorithms. **/
-    private void processHeartBeat(){
+    private void processHeartBeat(String str){
         /**
             This method is used to process heartbeat messages:
             1. Start the timertask when receive the heartbeat message for the first time.
             2. Restart the timertask every time after the first time.
          **/
+        HeartBeatProtocol heartbeat = JSON.parseObject(str, HeartBeatProtocol.class);
+        if(RaftController.getInstance().getLeaderName() == null) RaftController.getInstance().setLeaderName(heartbeat.getInitiator());
+
         if(newElectionScheduler == null){
             // Start a timer for the heartbeat messages from the leader.
             this.newElectionScheduler = new NewElectionScheduler(0);
@@ -138,19 +142,32 @@ public class GuiListener {
         RaftController.getInstance().increaseTicketCount(); // Increase ticket count.
         System.out.println("elector: "+ticket.getElector());
         // If this ticket voted for me, increase my vote count.
-        if(ticket.isVote()) RaftController.getInstance().increaseVoteCount();
+        if(ticket.getVote()) RaftController.getInstance().increaseVoteCount();
 
         // Get the number of current peers(including myself).
-        int numPeers = ClientNet.getInstance().getPeerHosts().size();
+        int numPeers = RaftController.getInstance().getPeers().size();
 
-        if(RaftController.getInstance().getVoteCount() * 2 >= numPeers){
+        if(RaftController.getInstance().getVoteCount() * 2 > numPeers){
             // If I have got the majority votes, broadcast a elected message and change my status to be "LEADER".
+            System.out.println(String.format(
+                    "Received %d votes out of %d tickets from %d peers. I won the election.",
+                    RaftController.getInstance().getVoteCount(),
+                    RaftController.getInstance().getTicketCount(),
+                    RaftController.getInstance().getPeers().size()
+            ));
+
             ElectedProtocol electedProtocol = new ElectedProtocol(GuiController.get().getUsername());
             RaftController.getInstance().xBroadcast(electedProtocol);
             RaftController.getInstance().setStatus("LEADER");
         }else if(RaftController.getInstance().getTicketCount() >= numPeers){
             // If I received the max ticket count without getting majority count,
             // increase my election term, request a new election term.
+            System.out.println(String.format(
+                    "Received %d votes out of %d tickets from %d peers. A split vote happened.",
+                    RaftController.getInstance().getVoteCount(),
+                    RaftController.getInstance().getTicketCount(),
+                    RaftController.getInstance().getPeers().size()
+                    ));
             RaftController.getInstance().increaseTerm();
             NewElectionScheduler newElectionScheduler = new NewElectionScheduler(RaftController.getInstance().getTerm());
             newElectionScheduler.startTask(0);
@@ -161,9 +178,9 @@ public class GuiListener {
         /** This method is used to deal the case that a new leader is elected. **/
         ElectedProtocol electedProtocol = JSON.parseObject(str, ElectedProtocol.class);
         RaftController.getInstance().setStatus("FOLLOWER");
-        int leaderID = RaftController.getInstance().getIdByUserName(electedProtocol.getNewLeader());
-        ClientNet.getInstance().setLeaderID(leaderID);
+        String leaderName = electedProtocol.getNewLeader();
         RaftController.getInstance().setTerm(0);
+        RaftController.getInstance().setLeaderName(leaderName);
     }
 
     /** END OF RAFT SECTION **/

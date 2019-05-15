@@ -10,7 +10,12 @@ public class ElectionProtocol extends ScrabbleProtocol {
     private String elector;
     private int term;
     private String candidate;
-    public boolean isVote(){return this.vote;}
+    public boolean getVote(){return this.vote;}
+
+    public void setVote(boolean vote) {
+        this.vote = vote;
+    }
+
     public String getElector(){return this.elector;}
     public void setElector(String elector){this.elector = elector;}
     public ElectionProtocol(){

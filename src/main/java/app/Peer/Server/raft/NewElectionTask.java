@@ -4,6 +4,7 @@ import app.Models.PeerHosts;
 import app.Peer.Client.Net.ClientNet;
 import app.Peer.Client.gui.GuiController;
 import app.Peer.Client.gui.GuiSender;
+import app.Peer.Server.controllers.net.Net;
 import app.Protocols.Pack;
 import app.Protocols.RaftProtocol.HeartBeatProtocol;
 import app.Protocols.RaftProtocol.StartElectionProtocol;
@@ -33,6 +34,7 @@ public class NewElectionTask extends TimerTask {
             ArrayList<PeerHosts> newPeerHosts = new ArrayList<>(ClientNet.getInstance().getPeerHosts());
             newPeerHosts.removeIf(peerHosts -> peerHosts.getPeerID() == ClientNet.getInstance().getLeaderID());
             ClientNet.getInstance().setPeerHosts(newPeerHosts);
+            RaftController.getInstance().getPeers().remove(RaftController.getInstance().getLeaderName());
             // Set my status to be "CANDIDATE", set my election term to be 0,
             // and broadcast a start-election request.
             RaftController.getInstance().setStatus("CANDIDATE");

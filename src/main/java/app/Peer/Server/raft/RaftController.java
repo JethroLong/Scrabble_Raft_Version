@@ -5,6 +5,7 @@ import app.Peer.Client.Net.ClientNet;
 import app.Peer.Client.gui.GuiController;
 import app.Peer.Server.controllers.controlcenter.ControlCenter;
 import app.Peer.Server.controllers.gameEngine.GameProcess;
+import app.Peer.Server.controllers.net.Net;
 import app.Peer.Server.raft.Blockingqueue.RaftGetMsg;
 import app.Peer.Server.raft.Blockingqueue.RaftPutMsg;
 import app.Protocols.Pack;
@@ -12,8 +13,10 @@ import app.Protocols.ScrabbleProtocol;
 import com.alibaba.fastjson.JSON;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.concurrent.*;
 
 public class RaftController implements Runnable {
@@ -23,12 +26,30 @@ public class RaftController implements Runnable {
     private ExecutorService pool;
     private volatile static RaftController instance;
 
+    private String leaderName;
+
+    public void setLeaderName(String leaderName) {
+        this.leaderName = leaderName;
+    }
+
+    public String getLeaderName() {
+        return leaderName;
+    }
+
+    public HashMap<String, Socket> getPeers(){
+        return Net.getInstance().getClientNameSocketMap();
+    }
+
     // Election status can be either "LEADER", "FOLLOWER" or "CANDIDATE".
     private String status;
     public String getStatus(){return this.status;}
     public void setStatus(String status){
         this.status = status;
-        if(status.equals("LEADER")) GuiController.get().setLeader(true);
+        if(status.equals("LEADER")) {
+            GuiController.get().setLeader(true);
+            broadcastHeartBeat();
+            setLeaderName(GuiController.get().getUsername());
+        }
         else GuiController.get().setLeader(false);
     }
 
@@ -124,9 +145,8 @@ public class RaftController implements Runnable {
             0 - which lets the net to broadcast the massage to all peers(INCLUDING myself);
             peerId - which lets the net to unicast the massage to the peer with given peerId.
          **/
-        int recipient = getIdByUserName(username);
         String jsonStr = JSON.toJSONString(protocol);
-        Pack pack = new Pack(recipient, jsonStr);
+        Pack pack = new Pack(username, jsonStr);
         try{
             fromRaft.put(pack);
         }catch (InterruptedException e){
@@ -139,23 +159,8 @@ public class RaftController implements Runnable {
         /**
          This method is used to broadcast a message to peers EXCLUDING myself.
          **/
-        ArrayList<Integer> peerIDs = new ArrayList<>();
-        for (PeerHosts peerHosts: ClientNet.getInstance().getPeerHosts()){
-            peerIDs.add(peerHosts.getPeerID());
-        }
-//        System.out.println("PEERIDS BEFORE: "+peerIDs);
-        peerIDs.removeIf(integer -> integer == GuiController.get().getIntId());
-//        System.out.println("PEERIDS AFTER: "+peerIDs);
-        for(Integer peerID: peerIDs){
-            System.out.println("USERNAME: "+getUserNameById(peerID)+" FOR ID: "+peerID);
-            String jsonStr = JSON.toJSONString(protocol);
-            Pack pack = new Pack(peerID, jsonStr);
-            try{
-                fromRaft.put(pack);
-            }catch (InterruptedException e){
-                e.printStackTrace();
-            }
-        }
+        sendMsg(protocol, "broadcast");
+
     }
 
     public int getIdByUserName(String username){

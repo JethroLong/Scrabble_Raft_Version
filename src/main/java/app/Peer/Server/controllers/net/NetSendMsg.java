@@ -2,15 +2,13 @@ package app.Peer.Server.controllers.net;
 
 
 import app.Models.PeerHosts;
+import app.Peer.Client.gui.GuiController;
 import app.Protocols.Pack;
 
 import java.io.DataOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.*;
 
 public class NetSendMsg implements Runnable {
     private Hashtable clientNameTable;
@@ -29,7 +27,10 @@ public class NetSendMsg implements Runnable {
             if(message.getRecipient()==null){ // (message) Pack : msg + recipientID
 
 //                System.err.println("GetRecipient null");
-                if(message.getUserId()==0){
+                if (message.getUserName()!=null){
+                    if(message.getUserName().equals("broadcast")) broadcast(message.getMsg());
+                    else sendToPeerSocket(message.getMsg(), message.getUserName());
+                } else if(message.getUserId()==0){
 //                    System.err.println("Userid 0, brocasting");
                     sendBroadcastMsg(message.getMsg()); //broadcast
                 }else {
@@ -58,14 +59,31 @@ public class NetSendMsg implements Runnable {
 
     private void sendToPeer(String msg, int clientId){
         client = (Socket)clientNameTable.get(clientId);
-        System.out.println("sendToPeer id: "+clientId);
+//        System.out.println("sendToPeer id: "+clientId);
         sendMsgOperation(msg);
     }
 
     private void sendToPeerSocket(String msg, String clientName){
         client = Net.getInstance().getClientNameSocketMap().get(clientName);
-        System.out.println("NegSendMsg Send to Peer() .." + client);
-        sendMsgOperation(msg);
+//        if(client != null){
+        try{
+            if (!client.isClosed()) {
+//                System.out.println("NegSendMsg Send to Peer() .." + client);
+                sendMsgOperation(msg);
+            }
+//        }
+        }catch (Exception e){
+            System.err.println("Exception happened when sending to client: "+clientName);
+        }
+
+    }
+
+    private void broadcast(String msg){
+        HashMap<String, Socket> clientNameSocketMap = new HashMap<>(Net.getInstance().getClientNameSocketMap());
+//        System.out.println("MY USERNAME: "+GuiController.get().getUsername());
+        for(String name: clientNameSocketMap.keySet()){
+            if(!name.equals(GuiController.get().getUsername())) sendToPeerSocket(msg, name);
+        }
     }
 
     private void sendMsgOperation(String msg){
