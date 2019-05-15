@@ -7,17 +7,17 @@ import app.Models.Player;
 import app.Models.Users;
 import app.Peer.Client.Gui;
 import app.Peer.Client.Net.ClientNet;
-import app.Peer.Server.raft.DetectHeartBeatScheduler;
+import app.Peer.Server.controllers.gameEngine.GameProcess;
+import app.Peer.Server.raft.NewElectionScheduler;
 import app.Peer.Server.raft.ElectionTask;
-import app.Peer.Server.raft.HeartBeatScheduler;
 import app.Peer.Server.raft.RaftController;
-import app.Protocols.Pack;
+import app.Protocols.RaftProtocol.ElectedProtocol;
+import app.Protocols.RaftProtocol.ElectionProtocol;
 import app.Protocols.RaftProtocol.StartElectionProtocol;
 import app.Protocols.ScrabbleProtocol;
 import app.Protocols.ServerResponse.*;
 import com.alibaba.fastjson.JSON;
 
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 
@@ -25,7 +25,7 @@ public class GuiListener {
 
     private volatile static GuiListener instance;
     private BlockingQueue<String> queue;
-    private DetectHeartBeatScheduler detectHeartBeatScheduler;
+    private NewElectionScheduler newElectionScheduler;
     private GuiListener() {
 
     }
@@ -66,20 +66,25 @@ public class GuiListener {
             case "BackupProtocol":
                 processBackup(str);
                 break;
+
+            // RAFT SECTION: protocol to process Raft algorithms.
             case "RaftProtocol":
                 processRaft(str);
                 break;
             case "HeartBeatProtocol":
-                processHeartBeat(str);
+                processHeartBeat();
                 break;
             case "StartElectionProtocol":
-//                System.out.println("Request accepted: "+scrabbleProtocol);
                 processElectionRequest(str);
                 break;
             case "ElectionProtocol":
-//                System.out.println("Request accepted: "+scrabbleProtocol);
                 processElection(str);
                 break;
+            case "ElectedProtocol":
+                processElected(str);
+                break;
+            // END OF RAFT SECTION
+
             default:
                 break;
         }
@@ -92,45 +97,97 @@ public class GuiListener {
         // case 3:
     }
 
-    private void processHeartBeat(String str){
-        if(detectHeartBeatScheduler == null){
-            this.detectHeartBeatScheduler = new DetectHeartBeatScheduler();
-            detectHeartBeatScheduler.startTask();
+    /** RAFT SECTION: methods to process Raft algorithms. **/
+    private void processHeartBeat(){
+        /**
+            This method is used to process heartbeat messages:
+            1. Start the timertask when receive the heartbeat message for the first time.
+            2. Restart the timertask every time after the first time.
+         **/
+        if(newElectionScheduler == null){
+            // Start a timer for the heartbeat messages from the leader.
+            this.newElectionScheduler = new NewElectionScheduler(0);
+            // Every follower should wait at least 7 secs.
+            // After that, wait another random period(between 0 - 5 secs) and broadcast election request to every peer alive.
+            newElectionScheduler.startTask(7);
         }else {
-            detectHeartBeatScheduler.restart();
+            newElectionScheduler.restart();
         }
 
     }
 
 
     private void processElectionRequest(String str){
+        /** This method is used to decide whether to vote for a candidate or not. **/
         StartElectionProtocol request = JSON.parseObject(str, StartElectionProtocol.class);
-        ElectionTask electionTask = new ElectionTask(GuiController.get().getIntId(), RaftController.getInstance().getTerm());
-        if(request.getTerm() >= RaftController.getInstance().getTerm()){ // If the request has a term at least as large as mine
+        ElectionTask electionTask = new ElectionTask(GuiController.get().getUsername(), RaftController.getInstance().getTerm());
+        // Check if the request has a term at least as large as mine.
+        if(request.getTerm() >= RaftController.getInstance().getTerm() & !RaftController.getInstance().getHasVoted()){
+            // If so, vote for the candidate.
             electionTask.vote(request.getCandidate(), true);
+            RaftController.getInstance().setHasVoted(true);
         }else{
+            // If not, do not vote for the candidate.
             electionTask.vote(request.getCandidate(), false);
         }
     }
 
     private void processElection(String str){
+        /** This method is used to determine the result of an election term. **/
+        ElectionProtocol ticket = JSON.parseObject(str, ElectionProtocol.class); // Get the election ticket.
+        RaftController.getInstance().increaseTicketCount(); // Increase ticket count.
+        System.out.println("elector: "+ticket.getElector());
+        // If this ticket voted for me, increase my vote count.
+        if(ticket.isVote()) RaftController.getInstance().increaseVoteCount();
 
+        // Get the number of current peers(including myself).
+        int numPeers = ClientNet.getInstance().getPeerHosts().size();
+
+        if(RaftController.getInstance().getVoteCount() * 2 >= numPeers){
+            // If I have got the majority votes, broadcast a elected message and change my status to be "LEADER".
+            ElectedProtocol electedProtocol = new ElectedProtocol(GuiController.get().getUsername());
+            RaftController.getInstance().xBroadcast(electedProtocol);
+            RaftController.getInstance().setStatus("LEADER");
+        }else if(RaftController.getInstance().getTicketCount() >= numPeers){
+            // If I received the max ticket count without getting majority count,
+            // increase my election term, request a new election term.
+            RaftController.getInstance().increaseTerm();
+            NewElectionScheduler newElectionScheduler = new NewElectionScheduler(RaftController.getInstance().getTerm());
+            newElectionScheduler.startTask(0);
+        }
     }
 
+    private void processElected(String str){
+        /** This method is used to deal the case that a new leader is elected. **/
+        ElectedProtocol electedProtocol = JSON.parseObject(str, ElectedProtocol.class);
+        RaftController.getInstance().setStatus("FOLLOWER");
+        int leaderID = RaftController.getInstance().getIdByUserName(electedProtocol.getNewLeader());
+        ClientNet.getInstance().setLeaderID(leaderID);
+        RaftController.getInstance().setTerm(0);
+    }
+
+    /** END OF RAFT SECTION **/
 
     private void processBackup(String str) {
         // update local backups -- GameState & peerSockets
         BackupProtocol backup = JSON.parseObject(str, BackupProtocol.class);
+
         // extract
         PeerHosts[] peerHosts = backup.getPeerHosts();
         GameState gameState = backup.getGameState();
+        int leaderID = backup.getLeaderID();
+
         // update Game state
         GuiController.get().updateLocalGameState(gameState);
 
+        // update leaderID
+        ClientNet.getInstance().setLeaderID(leaderID);
+
         // convert to array list
-        ArrayList<String> newPeerHosts = new ArrayList<String>();
+
+        ArrayList<PeerHosts> newPeerHosts = new ArrayList<PeerHosts>();
         for(PeerHosts peer : peerHosts){
-            newPeerHosts.add(peer.getPeerHost());
+            newPeerHosts.add(peer);
         }
         // set new peerHosts from server and establish new connections
         ClientNet.getInstance().setPeerHosts(newPeerHosts);
@@ -269,7 +326,7 @@ public class GuiListener {
 //
 //                if (GuiController.get().getId() == newLeaderID){
 //                      GuiController.get().setLeader(true)  // mark self as new leader
-//                      look up the socket from connectedPeers such that peer.hostAddr == new leader's Address
+//                      look up the socket from connectedPeers using peerID
 //                      ClientNet.getInstance().setLeaderSocket(leaderSocket); //set leaderSocket
 //                      ClientNet.getInstance().run(); // restart net to new leader
 //                      //recover state from backup

@@ -24,13 +24,13 @@ public class Net implements Runnable{
     private String tag = "Net";
     private static Logger logger = Logger.getLogger(String.valueOf(Net.class));
 
-    public ArrayList<PeerHosts> getPeerSockets() {
+    public ArrayList<PeerHosts> getPeerHosts() {
         return peerHosts;
     }
     private ArrayList<PeerHosts> peerHosts; // to store peer hosts
     private final BlockingQueue<Pack> fromCenter;
     private final BlockingQueue<Pack> toCenter;
-    private int portNumber = 6666;
+    private int portNumber;
     private boolean flag = true;
     private ThreadFactory threadForSocket;
     private ExecutorService pool;
@@ -138,19 +138,21 @@ public class Net implements Runnable{
 
             while (flag){
 
-                client = server.accept();
-                String clientHost = client.getInetAddress().getHostAddress();
-                if (clientHost.equals("127.0.0.1")){
-                    clientHost = InetAddress.getLocalHost().getHostAddress();
-                }
-                peerHosts.add(new PeerHosts(clientNumber, clientHost));
+                client = server.accept(); //server reception
+
+//                String clientHost = client.getInetAddress().getHostAddress();
+//                if (clientHost.equals("127.0.0.1")){
+//                    clientHost = InetAddress.getLocalHost().getHostAddress();
+//                }
+//                peerHosts.add(new PeerHosts(clientNumber, clientHost));
                 DataOutputStream dataOutputStream = new DataOutputStream(client
                             .getOutputStream());
 
-//                if (GuiController.get().isLeader()){
-//                    new Thread(new Scheduler()).start(); //leader starts back up task
-//                }
+                if (GuiController.get().isLeader()){
+                    new Thread(new Scheduler()).start(); //leader starts back up task
+                }
                 // UserID -- socket binding && put in hashtable for quick access
+
                 clientDataHsh.put(client,dataOutputStream);
                 clientNameHash.put(clientNumber++,client);
                 System.err.println("clientName: "+client);

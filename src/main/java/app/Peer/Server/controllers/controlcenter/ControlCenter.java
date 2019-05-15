@@ -65,6 +65,17 @@ public class ControlCenter implements Runnable{
         return instance;
     }
 
+    public static ControlCenter get(int portNum) {
+        if (instance == null) {
+            synchronized (ControlCenter.class) {
+                if (instance == null) {
+                    instance = new ControlCenter(portNum);
+                }
+            }
+        }
+        return instance;
+    }
+
 
     public void initialServer(){
         threadForSocket = new ThreadFactoryBuilder()

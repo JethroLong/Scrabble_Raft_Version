@@ -3,6 +3,7 @@ package app.Peer.Server.BackUp;
 
 import app.Models.GameState;
 import app.Models.PeerHosts;
+import app.Peer.Client.gui.GuiController;
 import app.Peer.Server.controllers.gameEngine.GameProcess;
 import app.Peer.Server.controllers.gameEngine.blockingqueque.EnginePutMsg;
 import app.Peer.Server.controllers.net.Net;
@@ -22,14 +23,12 @@ public class BackUpTask extends TimerTask implements Runnable {
     @Override
     public void run() {
         backUpBcast();
-//        task(); //test case
     }
 
     void backUpBcast() {
         // send gameState to all
         try {
             Pack temp = Packing();
-            System.out.println("New Backup Pack: "+temp);
             EnginePutMsg.getInstance().putMsgToCenter(temp);
         } catch (Exception e) {
             e.printStackTrace();
@@ -37,14 +36,17 @@ public class BackUpTask extends TimerTask implements Runnable {
     }
 
     public Pack Packing() {
-        ArrayList<PeerHosts> peerHosts = Net.getInstance().getPeerSockets();
-        if (peerHosts != null) {
+        ArrayList<PeerHosts> peerHosts = Net.getInstance().getPeerHosts();
+        if (peerHosts.size() > 0) {
             PeerHosts[] peerHosts_List = new PeerHosts[peerHosts.size()];
             peerHosts_List = peerHosts.toArray(peerHosts_List);
 
             GameState gameState = GameProcess.getInstance().getGameState();
 
-            BackupProtocol backup = new BackupProtocol(gameState, peerHosts_List);
+            int leaderID = Integer.parseInt(GuiController.get().getId());
+
+            BackupProtocol backup = new BackupProtocol(gameState, peerHosts_List, leaderID);
+
             //lower down the likelihood that the clientID distribution meets a collision
             backup.setInitialClientID(Net.getInstance().getClientNumber());
             String jsonStr = JSON.toJSONString(backup);

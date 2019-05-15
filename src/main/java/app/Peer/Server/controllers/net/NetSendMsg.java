@@ -58,6 +58,7 @@ public class NetSendMsg implements Runnable {
 
     private void sendToPeer(String msg, int clientId){
         client = (Socket)clientNameTable.get(clientId);
+        System.out.println("sendToPeer id: "+clientId);
         sendMsgOperation(msg);
     }
 
@@ -69,7 +70,10 @@ public class NetSendMsg implements Runnable {
 //            System.err.println("2: "+client);
 
         } catch (Exception e) {
-            System.out.println("Welcome back!");
+//            System.out.println("Welcome back!");
+            e.printStackTrace();
+            System.out.println("client: "+client);
+            System.out.println("msg: "+msg);
         }
     }
 

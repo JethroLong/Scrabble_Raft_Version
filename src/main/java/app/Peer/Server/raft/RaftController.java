@@ -1,13 +1,19 @@
 package app.Peer.Server.raft;
 
+import app.Models.PeerHosts;
+import app.Peer.Client.Net.ClientNet;
 import app.Peer.Client.gui.GuiController;
 import app.Peer.Server.controllers.controlcenter.ControlCenter;
+import app.Peer.Server.controllers.gameEngine.GameProcess;
 import app.Peer.Server.raft.Blockingqueue.RaftGetMsg;
 import app.Peer.Server.raft.Blockingqueue.RaftPutMsg;
 import app.Protocols.Pack;
 import app.Protocols.ScrabbleProtocol;
 import com.alibaba.fastjson.JSON;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.*;
 
 public class RaftController implements Runnable {
@@ -26,9 +32,38 @@ public class RaftController implements Runnable {
         else GuiController.get().setLeader(false);
     }
 
+    // Indicate the current election term.
     private int term = 0;
     public int getTerm(){return term;}
-    public void setTerm(int term){this.term = term;}
+    public void increaseTerm(){
+        this.term++;
+        resetTicketCount();
+        resetVoteCount();
+        setHasVoted(false);
+    }
+    public void setTerm(int term){
+        this.term = term;
+        resetTicketCount();
+        resetVoteCount();
+        setHasVoted(false);
+    }
+
+    // A received ElectionProtocol is a ticket.
+    private int ticketCount = 0;
+    public int getTicketCount(){return this.ticketCount;}
+    public void increaseTicketCount(){this.ticketCount++;}
+    public void resetTicketCount(){this.ticketCount = 0;}
+
+    // Counts how many tickets vote for me.
+    private int voteCount = 0;
+    public int getVoteCount(){return this.voteCount;}
+    public void increaseVoteCount(){this.voteCount++;}
+    public void resetVoteCount(){this.voteCount = 0;}
+
+    // Records that whether I have voted or not in a term.
+    private boolean hasVoted = false;
+    public boolean getHasVoted(){return hasVoted;}
+    public void setHasVoted(boolean hasVoted){this.hasVoted = hasVoted;}
 
     // constructor
     private RaftController(BlockingQueue<Pack> toRaft, BlockingQueue<Pack> fromRaft, BlockingQueue<Pack> toNet) {
@@ -81,12 +116,15 @@ public class RaftController implements Runnable {
     }
 
 
-    public <T extends ScrabbleProtocol> void sendMsg(T protocol, int recipient){
-        // This method is used to send massages to any peer.
-        // The first parameter should be of any subtype of ScrabbleProtocol.
-        // The second parameter could be either:
-        // 0 - which lets the net to broadcast the massage to all peers;
-        // userid - which lets the net to unicast the massage to the peer with given userid.
+    public <T extends ScrabbleProtocol> void sendMsg(T protocol, String username){
+        /**
+            This method is used to send massages to any peer.
+            The first parameter should be of any subtype of ScrabbleProtocol.
+            The second parameter could be either:
+            0 - which lets the net to broadcast the massage to all peers(INCLUDING myself);
+            peerId - which lets the net to unicast the massage to the peer with given peerId.
+         **/
+        int recipient = getIdByUserName(username);
         String jsonStr = JSON.toJSONString(protocol);
         Pack pack = new Pack(recipient, jsonStr);
         try{
@@ -97,14 +135,35 @@ public class RaftController implements Runnable {
     }
 
 
-    // use this method to broadcast msg to all the other peers
-    void broadcast(Pack packedMsg) {
-        try{
-//            System.out.println("xxxxxxxxxxxxxx"+fromRaft);
-            fromRaft.put(packedMsg);
-        }catch (InterruptedException e){
-            e.printStackTrace();
+    public <T extends ScrabbleProtocol> void xBroadcast(T protocol) {
+        /**
+         This method is used to broadcast a message to peers EXCLUDING myself.
+         **/
+        ArrayList<Integer> peerIDs = new ArrayList<>();
+        for (PeerHosts peerHosts: ClientNet.getInstance().getPeerHosts()){
+            peerIDs.add(peerHosts.getPeerID());
         }
+//        System.out.println("PEERIDS BEFORE: "+peerIDs);
+        peerIDs.removeIf(integer -> integer == GuiController.get().getIntId());
+//        System.out.println("PEERIDS AFTER: "+peerIDs);
+        for(Integer peerID: peerIDs){
+            System.out.println("USERNAME: "+getUserNameById(peerID)+" FOR ID: "+peerID);
+            String jsonStr = JSON.toJSONString(protocol);
+            Pack pack = new Pack(peerID, jsonStr);
+            try{
+                fromRaft.put(pack);
+            }catch (InterruptedException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public int getIdByUserName(String username){
+        return GameProcess.getInstance().getIdByUserName(username);
+    }
+
+    public String getUserNameById(int id){
+        return GameProcess.getInstance().getUserNameById(id);
     }
 
     public void switchProtocols(Pack packedMsg) {
