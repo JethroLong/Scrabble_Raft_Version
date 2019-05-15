@@ -21,6 +21,7 @@ public class NetThread implements Runnable {
     private final BlockingQueue<Pack> toNetPutMsg;
     private int clientID;
 
+
     public NetThread(Socket client, Hashtable clientDataHash, Hashtable clientNameHash, BlockingQueue toNetPutMsg, int clientID) {
         this.client = client;
         this.clientDataHash = clientDataHash;
@@ -45,6 +46,12 @@ public class NetThread implements Runnable {
                 if(client.isClosed()==false&&client.isConnected()==true){
                     String message = inputStream.readLine();
                     if(message!=null||!message.equals("")){
+                        // extract clientName from message and put into clientNameSocketMap
+                        String clientName = "";
+                        if(!Net.getInstance().getClientNameSocketMap().containsKey((clientName))) {
+                            Net.getInstance().putClientNameSocketMap(clientName, client);
+                        }
+
                         // toNetPutMsg -- from client to net
                         toNetPutMsg.put(new Pack(clientID,bouncyCastleBase64(message)));
                     }else {

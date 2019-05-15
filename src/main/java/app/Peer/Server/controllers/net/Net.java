@@ -15,6 +15,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
@@ -26,7 +27,6 @@ public class Net implements Runnable{
     public ArrayList<PeerHosts> getPeerSockets() {
         return peerHosts;
     }
-
     private ArrayList<PeerHosts> peerHosts; // to store peer hosts
     private final BlockingQueue<Pack> fromCenter;
     private final BlockingQueue<Pack> toCenter;
@@ -34,6 +34,17 @@ public class Net implements Runnable{
     private boolean flag = true;
     private ThreadFactory threadForSocket;
     private ExecutorService pool;
+    private Hashtable clientDataHsh = new Hashtable(50);
+    private Hashtable clientNameHash = new Hashtable(50);
+    private HashMap<String, Socket> clientNameSocketMap= new HashMap<String, Socket>();
+
+    public HashMap<String, Socket> getClientNameSocketMap() {
+        return clientNameSocketMap;
+    }
+
+    public void putClientNameSocketMap(String clientName, Socket socket) {
+        this.clientNameSocketMap.put(clientName, socket);
+    }
 
     public int getClientNumber() {
         return clientNumber;
@@ -44,7 +55,6 @@ public class Net implements Runnable{
     }
 
     private int clientNumber;
-
 
     public Net(BlockingQueue fromNet, BlockingQueue toNet) {
         this.toCenter = fromNet;
@@ -66,9 +76,6 @@ public class Net implements Runnable{
     public Hashtable getClientNameHash() {
         return clientNameHash;
     }
-
-    private Hashtable clientDataHsh = new Hashtable(50);
-    private Hashtable clientNameHash = new Hashtable(50);
 
     public ServerSocket getServer() {
         return server;

@@ -1,0 +1,9 @@
+2019-05-13 21:42:59  [ main:0 ] - [ INFO ]  clientControl Initial clientControlCenter Complete!
+2019-05-13 21:42:59  [ Thread-0:15 ] - [ INFO ]  clientControl Initial Client Completed
+2019-05-13 21:43:20  [ Server-ControlCenter-pool-2:21167 ] - [ INFO ]  RaftPutMsg Initialize
+2019-05-13 21:46:25  [ main:0 ] - [ INFO ]  clientControl Initial clientControlCenter Complete!
+2019-05-13 21:46:25  [ Thread-0:12 ] - [ INFO ]  clientControl Initial Client Completed
+2019-05-13 21:46:31  [ Server-ControlCenter-pool-2:6245 ] - [ INFO ]  RaftPutMsg Initialize
+2019-05-13 21:51:14  [ main:0 ] - [ INFO ]  clientControl Initial clientControlCenter Complete!
+2019-05-13 21:51:14  [ Thread-0:9 ] - [ INFO ]  clientControl Initial Client Completed
+2019-05-13 21:53:14  [ Server-ControlCenter-pool-2:120172 ] - [ INFO ]  RaftPutMsg Initialize
