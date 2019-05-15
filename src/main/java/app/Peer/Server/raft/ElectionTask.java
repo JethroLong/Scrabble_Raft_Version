@@ -10,18 +10,18 @@ public class ElectionTask {
     /**
      This class is used to react to an election request.
      **/
-    private int elector;
-    private int candidate;
+    private String elector;
+    private String candidate;
     private boolean vote;
     private int term = 0;
-    public ElectionTask(int elector, int term){
+    public ElectionTask(String elector, int term){
         this.elector = elector;
         this.term = term;
     }
 
-    public void vote(int candidate, boolean vote){
+    public void vote(String candidate, boolean vote){
         try {
-            ElectionProtocol msg = new ElectionProtocol(vote, this.term);
+            ElectionProtocol msg = new ElectionProtocol(vote, this.term, GuiController.get().getUsername(), candidate);
             System.out.println("New vote: "+msg);
             RaftController.getInstance().sendMsg(msg, candidate);
         } catch (Exception e) {

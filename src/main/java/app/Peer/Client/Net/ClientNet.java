@@ -204,7 +204,7 @@ public class ClientNet implements Runnable {
             GuiController.get().loginGame(localServerPort);
             threadForSocket = new ThreadFactoryBuilder()
                     .setNameFormat("Net-pool-%d").build();
-            pool = new ThreadPoolExecutor(3, 50, 0L, TimeUnit.MILLISECONDS,
+            pool = new ThreadPoolExecutor(10, 50, 0L, TimeUnit.MILLISECONDS,
                     new LinkedBlockingQueue<Runnable>(1024), threadForSocket, new ThreadPoolExecutor.AbortPolicy());
             pool.execute(new ClientNetGetMsg(fromCenter, socket));
             pool.execute(new ClientNetPutMsg(toCenter, toNetPutMsg));

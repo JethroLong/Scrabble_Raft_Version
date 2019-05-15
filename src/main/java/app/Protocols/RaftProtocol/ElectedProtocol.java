@@ -6,9 +6,14 @@ public class ElectedProtocol extends ScrabbleProtocol {
     /**
      This protocol is used to informs other peers that I was elected as the new leader.
      **/
-    private int newLeader;
-    public int getNewLeader(){return newLeader;}
-    public ElectedProtocol(int newLeader){
+    private String newLeader;
+    public String  getNewLeader(){return newLeader;}
+
+    public void setNewLeader(String newLeader) {
+        this.newLeader = newLeader;
+    }
+
+    public ElectedProtocol(String newLeader){
         super.setTAG("ElectedProtocol");
         this.newLeader = newLeader;
     }

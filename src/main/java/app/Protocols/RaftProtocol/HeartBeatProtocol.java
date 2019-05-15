@@ -5,17 +5,27 @@ import app.Protocols.ScrabbleProtocol;
 
 public class HeartBeatProtocol extends ScrabbleProtocol {
 
-    private String heartbeat = "Peng! Peng! Peng!";
-
+    private String initiator;
+    private String heartbeat = "Heart beat message.";
     public String getHeartbeat() {
         return heartbeat;
     }
 
-    public HeartBeatProtocol(){
-        super.setTAG("HeartBeatProtocol");
+    public void setInitiator(String initiator) {
+        this.initiator = initiator;
     }
-    public HeartBeatProtocol(String heartbeat){
-        super.setTAG("HeartBeatProtocol");
+
+    public String getInitiator() {
+        return initiator;
+    }
+
+    public void setHeartbeat(String heartbeat) {
         this.heartbeat = heartbeat;
+    }
+
+
+    public HeartBeatProtocol(String initiator){
+        super.setTAG("HeartBeatProtocol");
+        this.initiator = initiator;
     }
 }

@@ -1,5 +1,6 @@
 package app.Peer.Server.raft;
 
+import app.Peer.Client.gui.GuiController;
 import app.Protocols.Pack;
 import app.Protocols.RaftProtocol.HeartBeatProtocol;
 import com.alibaba.fastjson.JSON;
@@ -15,19 +16,11 @@ public class HeartBeatTask extends TimerTask implements Runnable {
 
     private void broadCastHeartBeat() {
         try {
-            HeartBeatProtocol heartbeat = new HeartBeatProtocol("PENG PENG PENG!");
-//            String jsonStr = JSON.toJSONString(heartbeat);
-//            Pack temp = Packing();
-//            System.out.println("New HeartBeat Pack: "+temp);
-            RaftController.getInstance().sendMsg(heartbeat, 0);
+            HeartBeatProtocol heartbeat = new HeartBeatProtocol(GuiController.get().getUsername());
+            RaftController.getInstance().xBroadcast(heartbeat);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private Pack Packing() {
-        HeartBeatProtocol heartbeat = new HeartBeatProtocol("PENG PENG PENG!");
-        String jsonStr = JSON.toJSONString(heartbeat);
-        return new Pack(0, jsonStr);
-    }
 }

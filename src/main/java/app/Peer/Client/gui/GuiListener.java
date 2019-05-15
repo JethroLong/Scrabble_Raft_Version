@@ -7,6 +7,7 @@ import app.Models.Player;
 import app.Models.Users;
 import app.Peer.Client.Gui;
 import app.Peer.Client.Net.ClientNet;
+import app.Peer.Server.controllers.gameEngine.GameProcess;
 import app.Peer.Server.raft.NewElectionScheduler;
 import app.Peer.Server.raft.ElectionTask;
 import app.Peer.Server.raft.RaftController;
@@ -73,15 +74,15 @@ public class GuiListener {
             case "HeartBeatProtocol":
                 processHeartBeat();
                 break;
-//            case "StartElectionProtocol":
-//                processElectionRequest(str);
-//                break;
-//            case "ElectionProtocol":
-//                processElection(str);
-//                break;
-//            case "ElectedProtocol":
-//                processElected(str);
-//                break;
+            case "StartElectionProtocol":
+                processElectionRequest(str);
+                break;
+            case "ElectionProtocol":
+                processElection(str);
+                break;
+            case "ElectedProtocol":
+                processElected(str);
+                break;
             // END OF RAFT SECTION
 
             default:
@@ -119,7 +120,7 @@ public class GuiListener {
     private void processElectionRequest(String str){
         /** This method is used to decide whether to vote for a candidate or not. **/
         StartElectionProtocol request = JSON.parseObject(str, StartElectionProtocol.class);
-        ElectionTask electionTask = new ElectionTask(GuiController.get().getIntId(), RaftController.getInstance().getTerm());
+        ElectionTask electionTask = new ElectionTask(GuiController.get().getUsername(), RaftController.getInstance().getTerm());
         // Check if the request has a term at least as large as mine.
         if(request.getTerm() >= RaftController.getInstance().getTerm() & !RaftController.getInstance().getHasVoted()){
             // If so, vote for the candidate.
@@ -135,7 +136,7 @@ public class GuiListener {
         /** This method is used to determine the result of an election term. **/
         ElectionProtocol ticket = JSON.parseObject(str, ElectionProtocol.class); // Get the election ticket.
         RaftController.getInstance().increaseTicketCount(); // Increase ticket count.
-
+        System.out.println("elector: "+ticket.getElector());
         // If this ticket voted for me, increase my vote count.
         if(ticket.isVote()) RaftController.getInstance().increaseVoteCount();
 
@@ -144,8 +145,8 @@ public class GuiListener {
 
         if(RaftController.getInstance().getVoteCount() * 2 >= numPeers){
             // If I have got the majority votes, broadcast a elected message and change my status to be "LEADER".
-            ElectedProtocol electedProtocol = new ElectedProtocol(GuiController.get().getIntId());
-            RaftController.getInstance().sendMsg(electedProtocol, 0);
+            ElectedProtocol electedProtocol = new ElectedProtocol(GuiController.get().getUsername());
+            RaftController.getInstance().xBroadcast(electedProtocol);
             RaftController.getInstance().setStatus("LEADER");
         }else if(RaftController.getInstance().getTicketCount() >= numPeers){
             // If I received the max ticket count without getting majority count,
@@ -160,7 +161,8 @@ public class GuiListener {
         /** This method is used to deal the case that a new leader is elected. **/
         ElectedProtocol electedProtocol = JSON.parseObject(str, ElectedProtocol.class);
         RaftController.getInstance().setStatus("FOLLOWER");
-        ClientNet.getInstance().setLeaderID(electedProtocol.getNewLeader());
+        int leaderID = RaftController.getInstance().getIdByUserName(electedProtocol.getNewLeader());
+        ClientNet.getInstance().setLeaderID(leaderID);
         RaftController.getInstance().setTerm(0);
     }
 

@@ -15,6 +15,7 @@ import com.alibaba.fastjson.JSON;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -59,7 +60,16 @@ public class GameProcess {
     private ConcurrentHashMap<Integer, String> db;
     private ConcurrentHashMap<Integer, ArrayList<Users>> teams;
     private BlockingQueue<Pack> queue;
-
+    public int getIdByUserName(String username){
+        for(Map.Entry entry : db.entrySet()){
+            System.out.println(entry.getKey()+": "+entry.getValue());
+            if(entry.getValue().equals(username)) return (Integer) entry.getValue();
+        }
+        return 0;
+    }
+    public String getUserNameById(int id){
+        return db.get(id);
+    }
 
     private volatile static GameProcess gameProcess;
 

@@ -104,7 +104,7 @@ public class GuiController {
         this.seq = seq;
     }
 
-    String getUsername() {
+    public String getUsername() {
         return username;
     }
 

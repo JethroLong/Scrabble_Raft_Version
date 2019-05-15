@@ -18,8 +18,11 @@ public class NewElectionTask extends TimerTask {
     **/
     private int term;
     public void run(){
-        System.err.println("No heartbeat from leader detected!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        broadcastRequest();
+        if(!RaftController.getInstance().getHasVoted()){
+            System.err.println("Sending new election request with term: "+term);
+            broadcastRequest();
+        }
+
     }
 
     public NewElectionTask(int term){this.term = term;}
@@ -36,8 +39,12 @@ public class NewElectionTask extends TimerTask {
             RaftController.getInstance().setTerm(this.term);
             StartElectionProtocol msg = new StartElectionProtocol(
                     RaftController.getInstance().getTerm(),
-                    GuiController.get().getIntId());
-            RaftController.getInstance().sendMsg(msg, 0);;
+                    GuiController.get().getUsername());
+            RaftController.getInstance().xBroadcast(msg);
+            // Vote for myself.
+            RaftController.getInstance().increaseVoteCount();
+            RaftController.getInstance().increaseTicketCount();
+            RaftController.getInstance().setHasVoted(true);
         } catch (Exception e) {
             e.printStackTrace();
         }
