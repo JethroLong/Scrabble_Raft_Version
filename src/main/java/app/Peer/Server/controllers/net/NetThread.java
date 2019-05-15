@@ -56,7 +56,10 @@ public class NetThread implements Runnable {
                             if(!Net.getInstance().getClientNameSocketMap().containsKey((clientName))) {
                                 Net.getInstance().putClientNameSocketMap(clientName, client);
                             }
+                            System.out.println("NetThread: " + Net.getInstance().getClientNameSocketMap());
+                            continue;
                         }
+
 
                         // toNetPutMsg -- from client to net
                         toNetPutMsg.put(new Pack(clientID,bouncyCastleBase64(message)));
