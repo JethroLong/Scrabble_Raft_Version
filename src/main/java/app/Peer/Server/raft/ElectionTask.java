@@ -21,7 +21,7 @@ public class ElectionTask {
 
     public void vote(String candidate, boolean vote){
         try {
-            ElectionProtocol msg = new ElectionProtocol(vote, this.term, GuiController.get().getUsername(), candidate);
+            ElectionProtocol msg = new ElectionProtocol(vote, this.term, RaftController.getInstance().getMyName(), candidate);
             System.out.println("New vote: "+msg);
             RaftController.getInstance().sendMsg(msg, candidate);
         } catch (Exception e) {

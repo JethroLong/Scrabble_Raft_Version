@@ -16,7 +16,7 @@ public class HeartBeatTask extends TimerTask implements Runnable {
 
     private void broadCastHeartBeat() {
         try {
-            HeartBeatProtocol heartbeat = new HeartBeatProtocol(GuiController.get().getUsername());
+            HeartBeatProtocol heartbeat = new HeartBeatProtocol(RaftController.getInstance().getMyName());
             RaftController.getInstance().xBroadcast(heartbeat);
         } catch (Exception e) {
             e.printStackTrace();

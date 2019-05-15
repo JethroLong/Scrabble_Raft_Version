@@ -76,13 +76,13 @@ public class GuiListener {
                 processHeartBeat(str);
                 break;
             case "StartElectionProtocol":
-                processElectionRequest(str);
+                if(RaftController.getInstance().getStatus().equals("CANDIDATE"))processElectionRequest(str);
                 break;
             case "ElectionProtocol":
-                processElection(str);
+                if(RaftController.getInstance().getStatus().equals("CANDIDATE")) processElection(str);
                 break;
             case "ElectedProtocol":
-                processElected(str);
+                if(RaftController.getInstance().getStatus().equals("CANDIDATE")) processElected(str);
                 break;
             // END OF RAFT SECTION
 
@@ -106,7 +106,7 @@ public class GuiListener {
             2. Restart the timertask every time after the first time.
          **/
         HeartBeatProtocol heartbeat = JSON.parseObject(str, HeartBeatProtocol.class);
-        if(RaftController.getInstance().getLeaderName() == null) RaftController.getInstance().setLeaderName(heartbeat.getInitiator());
+        if(RaftController.getInstance().getLeaderName() == null) RaftController.getInstance().setNewLeader(heartbeat.getInitiator());
 
         if(newElectionScheduler == null){
             // Start a timer for the heartbeat messages from the leader.
@@ -124,11 +124,20 @@ public class GuiListener {
     private void processElectionRequest(String str){
         /** This method is used to decide whether to vote for a candidate or not. **/
         StartElectionProtocol request = JSON.parseObject(str, StartElectionProtocol.class);
-        ElectionTask electionTask = new ElectionTask(GuiController.get().getUsername(), RaftController.getInstance().getTerm());
-        // Check if the request has a term at least as large as mine.
-        if(request.getTerm() >= RaftController.getInstance().getTerm() & !RaftController.getInstance().getHasVoted()){
-            // If so, vote for the candidate.
+        ElectionTask electionTask = new ElectionTask(RaftController.getInstance().getMyName(),
+                RaftController.getInstance().getTerm());
+        // Vote under two cases:
+        // 1. The request has a term larger than mine.
+        // 2. The request has a term as large as mine,
+        //    I have not voted in this election term,
+        //    and my status is candidate.
+        if(request.getTerm() > RaftController.getInstance().getTerm()
+                || request.getTerm() == RaftController.getInstance().getTerm()
+                & !RaftController.getInstance().getHasVoted()
+                & RaftController.getInstance().getStatus().equals("CANDIDATE")){
+            // If so, vote for the candidate. Set the term and set hasVoted to be true.
             electionTask.vote(request.getCandidate(), true);
+            RaftController.getInstance().setTerm(request.getTerm());
             RaftController.getInstance().setHasVoted(true);
         }else{
             // If not, do not vote for the candidate.
@@ -140,7 +149,6 @@ public class GuiListener {
         /** This method is used to determine the result of an election term. **/
         ElectionProtocol ticket = JSON.parseObject(str, ElectionProtocol.class); // Get the election ticket.
         RaftController.getInstance().increaseTicketCount(); // Increase ticket count.
-        System.out.println("elector: "+ticket.getElector());
         // If this ticket voted for me, increase my vote count.
         if(ticket.getVote()) RaftController.getInstance().increaseVoteCount();
 
@@ -156,7 +164,7 @@ public class GuiListener {
                     RaftController.getInstance().getPeers().size()
             ));
 
-            ElectedProtocol electedProtocol = new ElectedProtocol(GuiController.get().getUsername());
+            ElectedProtocol electedProtocol = new ElectedProtocol(RaftController.getInstance().getMyName());
             RaftController.getInstance().xBroadcast(electedProtocol);
             RaftController.getInstance().setStatus("LEADER");
         }else if(RaftController.getInstance().getTicketCount() >= numPeers){
@@ -177,10 +185,9 @@ public class GuiListener {
     private void processElected(String str){
         /** This method is used to deal the case that a new leader is elected. **/
         ElectedProtocol electedProtocol = JSON.parseObject(str, ElectedProtocol.class);
-        RaftController.getInstance().setStatus("FOLLOWER");
         String leaderName = electedProtocol.getNewLeader();
         RaftController.getInstance().setTerm(0);
-        RaftController.getInstance().setLeaderName(leaderName);
+        RaftController.getInstance().setNewLeader(leaderName);
     }
 
     /** END OF RAFT SECTION **/

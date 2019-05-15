@@ -26,14 +26,26 @@ public class RaftController implements Runnable {
     private ExecutorService pool;
     private volatile static RaftController instance;
 
-    private String leaderName;
+    public String getMyName(){return GuiController.get().getUsername();}
 
-    public void setLeaderName(String leaderName) {
-        this.leaderName = leaderName;
+    private String leaderName;
+    public void setLeaderName(String leaderName) { this.leaderName = leaderName; }
+    public String getLeaderName() { return leaderName; }
+
+    public void removeOldLeader(){
+        Socket leaderSocket = getPeers().get(leaderName);
+        ClientNet.getInstance().getConnectedPeerSockets().remove(leaderSocket);
+        getPeers().remove(leaderName);
+        leaderName = null;
     }
 
-    public String getLeaderName() {
-        return leaderName;
+    public void setNewLeader(String name){
+        leaderName = name;
+        if(!name.equals(getMyName())){
+            Socket leaderSocket = getPeers().get(name);
+            ClientNet.getInstance().setLeaderSocket(leaderSocket);
+            setStatus("FOLLOWER");
+        }
     }
 
     public HashMap<String, Socket> getPeers(){
@@ -163,13 +175,6 @@ public class RaftController implements Runnable {
 
     }
 
-    public int getIdByUserName(String username){
-        return GameProcess.getInstance().getIdByUserName(username);
-    }
-
-    public String getUserNameById(int id){
-        return GameProcess.getInstance().getUserNameById(id);
-    }
 
     public void switchProtocols(Pack packedMsg) {
     }

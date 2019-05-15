@@ -30,18 +30,15 @@ public class NewElectionTask extends TimerTask {
 
     private void broadcastRequest() {
         try {
-            // Update the connected peer hosts list. Remove the old leader from it.
-            ArrayList<PeerHosts> newPeerHosts = new ArrayList<>(ClientNet.getInstance().getPeerHosts());
-            newPeerHosts.removeIf(peerHosts -> peerHosts.getPeerID() == ClientNet.getInstance().getLeaderID());
-            ClientNet.getInstance().setPeerHosts(newPeerHosts);
-            RaftController.getInstance().getPeers().remove(RaftController.getInstance().getLeaderName());
+            // Remove the old leader from my RaftController.
+            RaftController.getInstance().removeOldLeader();
             // Set my status to be "CANDIDATE", set my election term to be 0,
             // and broadcast a start-election request.
             RaftController.getInstance().setStatus("CANDIDATE");
             RaftController.getInstance().setTerm(this.term);
             StartElectionProtocol msg = new StartElectionProtocol(
                     RaftController.getInstance().getTerm(),
-                    GuiController.get().getUsername());
+                    RaftController.getInstance().getMyName());
             RaftController.getInstance().xBroadcast(msg);
             // Vote for myself.
             RaftController.getInstance().increaseVoteCount();

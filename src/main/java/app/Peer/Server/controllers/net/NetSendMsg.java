@@ -74,6 +74,9 @@ public class NetSendMsg implements Runnable {
 //        }
         }catch (Exception e){
             System.err.println("Exception happened when sending to client: "+clientName);
+            System.err.println("socket: "+client);
+            System.err.println("message: "+msg);
+            e.printStackTrace();
         }
 
     }
