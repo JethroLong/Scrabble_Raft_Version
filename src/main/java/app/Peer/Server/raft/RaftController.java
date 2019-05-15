@@ -35,7 +35,7 @@ public class RaftController implements Runnable {
     public void removeOldLeader(){
         Socket leaderSocket = getPeers().get(leaderName);
         ClientNet.getInstance().getConnectedPeerSockets().remove(leaderSocket);
-        getPeers().remove(leaderName);
+        removeFromPeers(leaderName);
         leaderName = null;
     }
 
@@ -49,8 +49,9 @@ public class RaftController implements Runnable {
     }
 
     public HashMap<String, Socket> getPeers(){
-        return Net.getInstance().getClientNameSocketMap();
+        return new HashMap<>(Net.getInstance().getClientNameSocketMap());
     }
+    public void removeFromPeers(String name) {Net.getInstance().getClientNameSocketMap().remove(name);}
 
     // Election status can be either "LEADER", "FOLLOWER" or "CANDIDATE".
     private String status;
@@ -153,9 +154,8 @@ public class RaftController implements Runnable {
         /**
             This method is used to send massages to any peer.
             The first parameter should be of any subtype of ScrabbleProtocol.
-            The second parameter could be either:
-            0 - which lets the net to broadcast the massage to all peers(INCLUDING myself);
-            peerId - which lets the net to unicast the massage to the peer with given peerId.
+            The second parameter could be the username of a peer
+            - which lets the net to unicast the massage to the peer with given username.
          **/
         String jsonStr = JSON.toJSONString(protocol);
         Pack pack = new Pack(username, jsonStr);
