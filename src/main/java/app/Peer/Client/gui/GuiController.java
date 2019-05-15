@@ -8,6 +8,7 @@ import app.Peer.Server.controllers.gameEngine.GameProcess;
 import app.Protocols.GamingProtocol.BrickPlacing;
 import app.Protocols.GamingProtocol.GamingOperationProtocol;
 import app.Protocols.NonGamingProtocol.NonGamingProtocol;
+import app.Protocols.RaftProtocol.RegisterProtocol;
 import com.alibaba.fastjson.JSON;
 
 import java.net.InetAddress;
@@ -37,6 +38,10 @@ public class GuiController {
 
     private String localServerPort;
     private String localHostAddress;
+
+    public String getLocalHostAddress() {
+        return this.localHostAddress;
+    }
 
     private String status;
     private int seq = -1;
@@ -232,6 +237,10 @@ public class GuiController {
         selfArray[0] = username;
         NonGamingProtocol nonGamingProtocol = new NonGamingProtocol("login", selfArray, localServerPort, this.localHostAddress);
         GuiSender.get().sendToCenter(nonGamingProtocol);
+
+        // send RegisterProtocol to leader server
+        RegisterProtocol registerProtocol = new RegisterProtocol(username, this.localHostAddress, localServerPort);
+        GuiSender.get().sendToCenter(registerProtocol);
     }
 
     void invitePlayers(String[] players) {

@@ -167,7 +167,6 @@ public class RaftController implements Runnable {
     }
 
     public void switchProtocols(Pack packedMsg) {
-        System.out.println(packedMsg.getMsg());
     }
 
     public void broadcastHeartBeat() {

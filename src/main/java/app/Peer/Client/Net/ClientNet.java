@@ -1,11 +1,14 @@
 package app.Peer.Client.Net;
 
 import app.Models.PeerHosts;
+import app.Peer.Client.ClientCenter.ClientControlCenter;
 import app.Peer.Client.Gui;
 import app.Peer.Client.Net.blockingqueue.ClientNetGetMsg;
 import app.Peer.Client.Net.blockingqueue.ClientNetPutMsg;
 import app.Peer.Client.gui.GuiController;
 import app.Peer.Client.gui.LoginWindow;
+import app.Protocols.RaftProtocol.RegisterProtocol;
+import com.alibaba.fastjson.JSON;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.log4j.Logger;
 
@@ -173,9 +176,16 @@ public class ClientNet implements Runnable {
             connectedPeerHosts.add(new PeerHosts(Addr, Integer.toString(port)));
             connectedPeerSockets.add(newPeer);
 
-
             // open new net for new peer
             initialServer(newPeer, toNetPutMsg);
+
+            // send register msg for map clientName and socket to peer Server
+            String clientName = GuiController.get().getUsername();
+            String hostAddress = GuiController.get().getLocalHostAddress();
+            String hostPort = GuiController.get().getLocalServerPort();
+            RegisterProtocol registerProtocol = new RegisterProtocol(clientName, hostAddress, hostPort);
+            String registerMsg = JSON.toJSONString(registerProtocol);
+            pool.execute(new ClientNetSendMsg(registerMsg, newPeer));
         } catch (IOException e) {
             System.out.println("peer connection exception");
         }

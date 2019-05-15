@@ -12,7 +12,6 @@ public class RaftGetMsg implements Runnable{
 
     public RaftGetMsg(BlockingQueue<Pack> fromCenter){
         this.fromCenter = fromCenter;
-        GameProcess.getInstance().addBlockingQueue(fromCenter);
     }
 
     @Override

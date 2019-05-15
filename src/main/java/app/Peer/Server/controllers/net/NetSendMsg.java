@@ -62,6 +62,12 @@ public class NetSendMsg implements Runnable {
         sendMsgOperation(msg);
     }
 
+    private void sendToPeerSocket(String msg, String clientName){
+        client = Net.getInstance().getClientNameSocketMap().get(clientName);
+        System.out.println("NegSendMsg Send to Peer() .." + client);
+        sendMsgOperation(msg);
+    }
+
     private void sendMsgOperation(String msg){
         try {
             PrintWriter printWriter = new PrintWriter(new DataOutputStream(client.getOutputStream()));

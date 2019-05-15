@@ -3,6 +3,8 @@ package app.Peer.Server.controllers.net;
 
 import app.Protocols.GamingProtocol.GamingOperationProtocol;
 import app.Protocols.Pack;
+import app.Protocols.RaftProtocol.RegisterProtocol;
+import app.Protocols.ScrabbleProtocol;
 import com.alibaba.fastjson.JSON;
 
 import java.io.BufferedReader;
@@ -47,9 +49,13 @@ public class NetThread implements Runnable {
                     String message = inputStream.readLine();
                     if(message!=null||!message.equals("")){
                         // extract clientName from message and put into clientNameSocketMap
-                        String clientName = "";
-                        if(!Net.getInstance().getClientNameSocketMap().containsKey((clientName))) {
-                            Net.getInstance().putClientNameSocketMap(clientName, client);
+                        ScrabbleProtocol scrabbleProtocol = JSON.parseObject(bouncyCastleBase64(message), ScrabbleProtocol.class);
+                        if (scrabbleProtocol.getTAG().equals("RegisterProtocol")) {
+                            RegisterProtocol registerProtocol = JSON.parseObject(bouncyCastleBase64(message), RegisterProtocol.class);
+                            String clientName = registerProtocol.getClientName();
+                            if(!Net.getInstance().getClientNameSocketMap().containsKey((clientName))) {
+                                Net.getInstance().putClientNameSocketMap(clientName, client);
+                            }
                         }
 
                         // toNetPutMsg -- from client to net
