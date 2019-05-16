@@ -1003,7 +1003,7 @@ public class GameProcess {
         }
 
         // recovery lastBrickPlacing status
-        if (newGameState.getLatestBrickPlacing() != null){
+        if (newGameState.getLatestBrickPlacing() != null) {
             latestBrickPlacing = mapBrickPlacing(newGameState.getLatestBrickPlacing(), newGameState.getUserList());
         }
     }

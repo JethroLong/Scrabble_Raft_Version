@@ -6,6 +6,7 @@ import app.Models.Player;
 import app.Models.Users;
 import app.Peer.Client.Net.ClientNet;
 import app.Peer.Client.Net.ClientNetSendMsg;
+import app.Peer.Client.Net.blockingqueue.ClientNetGetMsg;
 import app.Peer.Server.controllers.gameEngine.GameProcess;
 import app.Peer.Server.controllers.net.Net;
 import app.Peer.Server.controllers.net.NetSendMsg;
@@ -365,10 +366,14 @@ public class GuiController {
             /////////
             // rebind userID and username -- all id related fields in gameState ---> newGameSate
             ////////
-            GameProcess.getInstance().setGameState(gameState); // newGameState
+        GameProcess.getInstance().setGameState(gameState); // newGameState
 //            NonGamingProtocol recovery = new NonGamingProtocol();
+
+        // test
+        ClientNetGetMsg.getInstance().setSocket(ClientNet.getInstance().getLeaderSocket());
+
 ////            recovery.setCommand("recovery");
-            GameProcess.getInstance().recovery();
+        GameProcess.getInstance().recovery();
 //            GuiSender.get().sendToCenter(recovery); // a request for recovery
 //        }
 //        else{

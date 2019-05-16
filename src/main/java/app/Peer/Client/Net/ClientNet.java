@@ -215,16 +215,18 @@ public class ClientNet implements Runnable {
                 if (GuiController.get().isLeader()) {
                     leaderSocket = socket;
                 }
+
             } else {
                 socket = leaderSocket;
             }
+
             String localServerPort = GuiController.get().getLocalServerPort();
             GuiController.get().loginGame(localServerPort);
             threadForSocket = new ThreadFactoryBuilder()
                     .setNameFormat("Net-pool-%d").build();
             pool = new ThreadPoolExecutor(20, 100, 0L, TimeUnit.MILLISECONDS,
                     new LinkedBlockingQueue<Runnable>(1024), threadForSocket, new ThreadPoolExecutor.AbortPolicy());
-            pool.execute(new ClientNetGetMsg(fromCenter, socket));
+            pool.execute(ClientNetGetMsg.getInstance(fromCenter, socket));
             pool.execute(new ClientNetPutMsg(toCenter, toNetPutMsg));
             initialServer(socket, toNetPutMsg);
         } catch (Exception e) {
