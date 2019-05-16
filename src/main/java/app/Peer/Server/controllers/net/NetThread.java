@@ -30,6 +30,7 @@ public class NetThread implements Runnable {
         this.clientNameHash = clientNameHash;
         this.toNetPutMsg = toNetPutMsg;
         this.clientID = clientID;
+        System.out.println("init new NetThread ... ");
     }
 
     @Override

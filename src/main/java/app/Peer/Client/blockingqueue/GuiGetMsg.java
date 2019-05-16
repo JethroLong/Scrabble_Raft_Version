@@ -23,7 +23,7 @@ public class GuiGetMsg implements Runnable{
                 synchronized (GuiListener.get()){
                     GuiListener.get().addMessage(temp);
                 }
-//                System.err.println("GuiGetMsg: receive msg from server: " + temp);
+                System.err.println("GuiGetMsg: receive msg from server: " + temp);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

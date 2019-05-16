@@ -45,7 +45,7 @@ public class PeerHosts {
 
     @Override
     public String toString() {
-        return String.format("userName: %d, peerHost: %s, peerPort: %s",
+        return String.format("userName: %s, peerHost: %s, peerPort: %s",
                 this.userName, this.peerHost, this.peerPort);
     }
 

@@ -18,6 +18,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.*;
 
 public class ClientNet implements Runnable {
@@ -29,6 +30,15 @@ public class ClientNet implements Runnable {
     private boolean flag = true;
     private ThreadFactory threadForSocket;
     private ExecutorService pool;
+    private HashMap<String, Socket> peerNameSocketMap;
+
+    public HashMap<String, Socket> getPeerNameSocketMap() {
+        return peerNameSocketMap;
+    }
+
+    public void putPeerNameSocketMap(String clientName, Socket socket) {
+        this.peerNameSocketMap.put(clientName, socket);
+    }
 
     public int getLeaderID() {
         return leaderID;
@@ -84,6 +94,7 @@ public class ClientNet implements Runnable {
         peerHosts = new ArrayList<PeerHosts>();
         connectedPeerSockets = new ArrayList<Socket>();
         connectedPeerHosts = new ArrayList<PeerHosts>();
+        this.peerNameSocketMap = new HashMap<>();
     }
 
     private ServerSocket server;
@@ -98,6 +109,7 @@ public class ClientNet implements Runnable {
         peerHosts = new ArrayList<PeerHosts>();
         connectedPeerSockets = new ArrayList<Socket>();
         connectedPeerHosts = new ArrayList<PeerHosts>();
+        this.peerNameSocketMap = new HashMap<>();
     }
 
 
@@ -132,8 +144,8 @@ public class ClientNet implements Runnable {
         for (PeerHosts peer : peerHosts) {
             int count = 0;
             for(PeerHosts connected : connectedPeerHosts){
-                System.out.println("ClientNet peer: " + peer);
-                System.out.println("ClientNet connected: " + connected);
+//                System.out.println("ClientNet peer: " + peer);
+//                System.out.println("ClientNet connected: " + connected);
                 if(peer.getUserName().trim().equals(connected.getUserName().trim())){
                     break;
                 }
@@ -153,6 +165,7 @@ public class ClientNet implements Runnable {
     private void startConnection(String newPeerName, String Addr, int port) {
         try {
             Socket newPeer = new Socket(Addr, port);
+            putPeerNameSocketMap(newPeerName, newPeer);
 
             System.out.println("connection succ! ");
 
