@@ -62,7 +62,9 @@ public class RaftController implements Runnable {
             broadcastHeartBeat();
             setLeaderName(GuiController.get().getUsername());
 
-            // re
+            // leader server recovery
+            Socket leaderSocket = ClientNet.getInstance().getPeerNameSocketMap().get(leaderName);
+            ClientNet.getInstance().setLeaderSocket(leaderSocket);
             GuiController.get().serverRecovery();
         }
         else GuiController.get().setLeader(false);
