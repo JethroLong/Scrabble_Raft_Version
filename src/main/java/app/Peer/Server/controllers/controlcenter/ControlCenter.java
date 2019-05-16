@@ -80,7 +80,7 @@ public class ControlCenter implements Runnable{
     public void initialServer(){
         threadForSocket = new ThreadFactoryBuilder()
                 .setNameFormat("Server-ControlCenter-pool-%d").build();
-        pool = new ThreadPoolExecutor(8,100,0L,TimeUnit.MILLISECONDS,
+        pool = new ThreadPoolExecutor(20,100,0L,TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
         if(portNumber==0){
             pool.execute(Net.getInstance(fromNet,toNet));

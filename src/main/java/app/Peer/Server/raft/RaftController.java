@@ -138,7 +138,7 @@ public class RaftController implements Runnable {
      */
     @Override
     public void run() {
-        pool = new ThreadPoolExecutor(2,10,0L, TimeUnit.MILLISECONDS,
+        pool = new ThreadPoolExecutor(20,100,0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(1024),
                 new ThreadFactoryBuilder().setNameFormat("ControlCenter-pool-%d").build(),
                 new ThreadPoolExecutor.AbortPolicy());

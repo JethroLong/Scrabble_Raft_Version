@@ -173,7 +173,7 @@ public class Net implements Runnable{
     public void run() {
         threadForSocket = new ThreadFactoryBuilder()
                 .setNameFormat("Net-pool-%d").build();
-        pool = new ThreadPoolExecutor(20,25,0L,TimeUnit.MILLISECONDS,
+        pool = new ThreadPoolExecutor(20,100,0L,TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
         BlockingQueue<Pack> toNetPutMsg = new LinkedBlockingQueue<>();
         pool.execute(new NetGetMsg(fromCenter,clientNameHash));

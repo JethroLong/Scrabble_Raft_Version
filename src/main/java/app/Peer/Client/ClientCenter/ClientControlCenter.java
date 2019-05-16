@@ -34,7 +34,7 @@ public class ClientControlCenter implements Runnable{
     public void initialClient(){
         threadForSocket = new ThreadFactoryBuilder()
                 .setNameFormat("Client-ControlCenter-pool-%d").build();
-        pool = new ThreadPoolExecutor(10,50,0L,TimeUnit.MILLISECONDS,
+        pool = new ThreadPoolExecutor(20,100,0L,TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
 //        pool.execute(ClientNet.getInstance(fromNet,toNet));
 //        pool.execute(Gui.getInstance(toGui,fromGui));

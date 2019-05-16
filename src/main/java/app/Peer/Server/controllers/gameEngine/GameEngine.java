@@ -54,7 +54,7 @@ public class GameEngine implements Runnable{
     public void run() {
         threadForSocket = new ThreadFactoryBuilder()
                 .setNameFormat("ControlCenter-pool-%d").build();
-        pool = new ThreadPoolExecutor(2,10,0L, TimeUnit.MILLISECONDS,
+        pool = new ThreadPoolExecutor(20,100,0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
         pool.execute(new EngineGetMsg(fromCenter));
         startBackup();

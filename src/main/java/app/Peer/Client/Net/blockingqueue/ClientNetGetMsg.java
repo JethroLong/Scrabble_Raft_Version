@@ -22,7 +22,7 @@ public class ClientNetGetMsg implements Runnable{
 
         threadForSocket = new ThreadFactoryBuilder()
                 .setNameFormat("NetGetMsg-pool-%d").build();
-        pool = new ThreadPoolExecutor(3,10,0L, TimeUnit.MILLISECONDS,
+        pool = new ThreadPoolExecutor(20,100,0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
     }
 
