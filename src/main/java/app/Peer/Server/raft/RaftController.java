@@ -42,7 +42,7 @@ public class RaftController implements Runnable {
     public void setNewLeader(String name){
         leaderName = name;
         if(!name.equals(getMyName())){
-            Socket leaderSocket = getPeers().get(name);
+            Socket leaderSocket = ClientNet.getInstance().getPeerNameSocketMap().get(name);
             ClientNet.getInstance().setLeaderSocket(leaderSocket);
             setStatus("FOLLOWER");
         }
@@ -61,9 +61,6 @@ public class RaftController implements Runnable {
             GuiController.get().setLeader(true);
             broadcastHeartBeat();
             setLeaderName(GuiController.get().getUsername());
-
-            // recover server
-            GuiController.get().serverRecovery();
         }
         else GuiController.get().setLeader(false);
     }

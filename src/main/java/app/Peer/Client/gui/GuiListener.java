@@ -190,6 +190,8 @@ public class GuiListener {
         String leaderName = electedProtocol.getNewLeader();
         RaftController.getInstance().setTerm(0);
         RaftController.getInstance().setNewLeader(leaderName);
+
+        ClientNetGetMsg.getInstance().setSocket(ClientNet.getInstance().getLeaderSocket());
     }
 
     /** END OF RAFT SECTION **/

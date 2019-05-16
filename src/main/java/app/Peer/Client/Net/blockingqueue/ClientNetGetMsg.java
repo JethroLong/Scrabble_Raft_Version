@@ -66,6 +66,8 @@ public class ClientNetGetMsg implements Runnable{
         while (flag){
             try {
                 String message = fromCenter.take();
+                System.err.println("ClientNetGetMsg: "+ message);
+                System.err.println("ClientNetGetMsg Socket: "+socket);
                 pool.execute(new ClientNetSendMsg(message,socket));
             } catch (InterruptedException e) {
                 e.printStackTrace();

@@ -19,7 +19,11 @@ public class ClientCenterPutMsg implements Runnable {
     public void run() {
         while (true){
             try {
-                toNet.put(fromGui.take());
+                String temp = fromGui.take();
+                System.err.println("ClientCenterPutMsg: "+ temp);
+                toNet.put(temp);
+
+//                toNet.put(fromGui.take());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
