@@ -57,6 +57,14 @@ public class GuiController {
         isLeader = leader;
     }
 
+    public GameState getGameState() {
+        return gameState;
+    }
+
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
+    }
+
     private GameState gameState;
 
 
@@ -243,6 +251,14 @@ public class GuiController {
         GuiSender.get().sendToCenter(registerProtocol);
     }
 
+    // after establishing connection to a new peer, login to the peer server process to bind username & userID in that peer
+    public void loginPeerServer(String localServerPort){
+        String[] selfName = new String[1];
+        selfName[0] = username;
+        NonGamingProtocol nonGamingProtocol =new NonGamingProtocol("peerLogin", selfName, localServerPort, this.localHostAddress);
+        GuiSender.get().sendToCenter(nonGamingProtocol);
+    }
+
     void invitePlayers(String[] players) {
         if (this.status.equals("available") || this.id.equals(Integer.toString(currentHostID))){
         NonGamingProtocol nonGamingProtocol = new NonGamingProtocol("inviteOperation", players);
@@ -339,7 +355,10 @@ public class GuiController {
     public void serverRecovery(){
         // check if in a game
         if (gameState.isGameStart()){
-            GameProcess.getInstance().setGameState(gameState);
+            /////////
+            // rebind userID and username -- all id related fields in gameState ---> newGameSate
+            ////////
+            GameProcess.getInstance().setGameState(gameState); // newGameState
             NonGamingProtocol recovery = new NonGamingProtocol();
             recovery.setCommand("recovery");
             GuiSender.get().sendToCenter(recovery); // a request for recovery

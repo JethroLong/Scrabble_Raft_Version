@@ -3,7 +3,7 @@ package app.Protocols.NonGamingProtocol;
 import app.Protocols.ScrabbleProtocol;
 
 public class NonGamingProtocol extends ScrabbleProtocol {
-    // to server: start, login, logout, invite, inviteResponse, recovery
+    // to server: start, login, logout, invite, inviteResponse, recovery, peerLogin
     // from server: userUpdate, invite, inviteACK
     private String command;
     private String[] userList;

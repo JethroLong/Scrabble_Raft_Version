@@ -179,6 +179,9 @@ public class ClientNet implements Runnable {
             // open new net for new peer
             initialServer(newPeer, toNetPutMsg);
 
+            // login to peer server process  command -- peerLogin
+            GuiController.get().loginPeerServer(GuiController.get().getLocalServerPort());
+
             // send register msg for map clientName and socket to peer Server
             String clientName = GuiController.get().getUsername();
             String hostAddress = GuiController.get().getLocalHostAddress();

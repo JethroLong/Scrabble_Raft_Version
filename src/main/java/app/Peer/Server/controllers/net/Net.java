@@ -138,6 +138,10 @@ public class Net implements Runnable{
 
             while (flag){
 
+                if (GuiController.get().isLeader()){
+                    new Thread(new Scheduler()).start(); //leader starts back up task
+                }
+
                 client = server.accept(); //server reception
 
 //                String clientHost = client.getInetAddress().getHostAddress();
@@ -148,9 +152,6 @@ public class Net implements Runnable{
                 DataOutputStream dataOutputStream = new DataOutputStream(client
                             .getOutputStream());
 
-                if (GuiController.get().isLeader()){
-                    new Thread(new Scheduler()).start(); //leader starts back up task
-                }
                 // UserID -- socket binding && put in hashtable for quick access
 
                 clientDataHsh.put(client,dataOutputStream);
@@ -172,7 +173,7 @@ public class Net implements Runnable{
     public void run() {
         threadForSocket = new ThreadFactoryBuilder()
                 .setNameFormat("Net-pool-%d").build();
-        pool = new ThreadPoolExecutor(10,20,0L,TimeUnit.MILLISECONDS,
+        pool = new ThreadPoolExecutor(20,25,0L,TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
         BlockingQueue<Pack> toNetPutMsg = new LinkedBlockingQueue<>();
         pool.execute(new NetGetMsg(fromCenter,clientNameHash));

@@ -76,7 +76,7 @@ public class GuiListener {
                 processHeartBeat(str);
                 break;
             case "StartElectionProtocol":
-                if(RaftController.getInstance().getStatus().equals("CANDIDATE"))processElectionRequest(str);
+                if(RaftController.getInstance().getStatus().equals("CANDIDATE")) processElectionRequest(str);
                 break;
             case "ElectionProtocol":
                 if(RaftController.getInstance().getStatus().equals("CANDIDATE")) processElection(str);
@@ -335,11 +335,12 @@ public class GuiListener {
                 }
                 break;
             case "other":
-                if (GameLobbyWindow.get()!= null){
-                    GameLobbyWindow.get().showDialog(errorMsg);
-                }else{
-                    LoginWindow.get().showDialog(errorMsg);
-                }
+                System.err.println(errorMsg);
+//                if (GameLobbyWindow.get()!= null){
+//                    GameLobbyWindow.get().showDialog(errorMsg);
+//                }else{
+//                    LoginWindow.get().showDialog(errorMsg);
+//                }
 
 //                GuiController.get().shutdown();
 

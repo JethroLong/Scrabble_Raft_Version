@@ -56,12 +56,12 @@ public class ClientNetThread implements Runnable {
     }
     private void closeClient(){
         try {
-            toNetPutMsg.put(JSON.toJSONString(new ErrorProtocol("The server has been shutdown", "other")));
+            toNetPutMsg.put(JSON.toJSONString(new ErrorProtocol("The leader has been shutdown", "other")));
             peerServer.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("System shutdown!");
+//        System.out.println("System shutdown!");
     }
 
     private  String bouncyCastleBase64 (String cipher) {
