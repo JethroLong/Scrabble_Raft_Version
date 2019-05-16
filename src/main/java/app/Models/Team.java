@@ -2,7 +2,7 @@ package app.Models;
 
 import java.util.ArrayList;
 
-public class Team {
+public class  Team {
     public Team() {
     }
 
