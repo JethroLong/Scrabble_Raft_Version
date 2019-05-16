@@ -269,9 +269,16 @@ public class LoginWindow implements Runnable {
         back.addKeyListener(keyListener);
         login.addActionListener((ActionEvent arg0) -> {
             try {
+                int localPortInt = (int)(Math.random() * (65535 - 1023) + 1024);
+                localPortStr = Integer.toString(localPortInt);
+                GuiController.get().setLocalServerPort(localPortStr);
+
+                GuiController.get().setLeader(false);
+
                 //decryption
                 JSONArray inviteURLText = JSON.parseArray(bouncyCastleBase64(inviteURL.getText()));
                 loginAction(userName.getText(), inviteURLText.getString(0), inviteURLText.getString(1));
+                new MonitorGui(localPortInt); // start server process
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
             }

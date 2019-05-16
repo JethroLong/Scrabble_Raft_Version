@@ -31,7 +31,7 @@ public class GameProcess {
     private int numVoted;
     private int agree;
     private int disagree;
-    private int voteInitiator;
+    private int voteInitiator = ID_PLACEHOLDER;
     private boolean voteSuccess;
     private int numPass;
     private int gameLoopStartSeq;
@@ -221,7 +221,7 @@ public class GameProcess {
     }
 
     private void recovery(){
-        recoverGlobalParas(GuiController.get().getGameState());
+        recoverGlobalParas(GuiController.get().getGameState());  //new leader's gameState is the agreed global gameState
         userListToClient();
         if (gameStart){
             if (voteInitiator == ID_PLACEHOLDER){ // if not in a voting progress previously
@@ -923,8 +923,8 @@ public class GameProcess {
     }
 
     // map userID field in brickPlacing (lastBrickPlacing)
-    private GamingOperationProtocol mapBrickPlacing(GamingOperationProtocol oldlatestBrickPlacing, Users[] oldUserList){
-        int oldID = oldlatestBrickPlacing.getBrickPlacing().getUserID();
+    private GamingOperationProtocol mapBrickPlacing(GamingOperationProtocol oldLatestBrickPlacing, Users[] oldUserList){
+        int oldID = oldLatestBrickPlacing.getBrickPlacing().getUserID();
         int newID = ID_PLACEHOLDER;
         for(Users oldUser : oldUserList){
             if(oldID == oldUser.getUserID()){
@@ -932,8 +932,8 @@ public class GameProcess {
                 break;
             }
         }
-        oldlatestBrickPlacing.getBrickPlacing().setUserID(newID);
-        return oldlatestBrickPlacing;
+        oldLatestBrickPlacing.getBrickPlacing().setUserID(newID);
+        return oldLatestBrickPlacing;
     }
 
     // map gameHost ID from oldUserList
