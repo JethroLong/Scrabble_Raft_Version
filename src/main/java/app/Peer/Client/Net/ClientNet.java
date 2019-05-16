@@ -186,8 +186,11 @@ public class ClientNet implements Runnable {
         try {
             if (leaderSocket == null) {
                 socket = new Socket(ipAddr, portNum);
+
                 connectedPeerSockets.add(socket);
-                connectedPeerHosts.add(new PeerHosts(ipAddr, Integer.toString(portNum)));
+                String userName = GuiController.get().getUsername();
+                connectedPeerHosts.add(new PeerHosts(userName, ipAddr, Integer.toString(portNum)));
+
                 if (GuiController.get().isLeader()) {
                     leaderSocket = socket;
                 }
