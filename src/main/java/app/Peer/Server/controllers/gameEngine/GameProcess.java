@@ -132,16 +132,13 @@ public class GameProcess {
 
         String clientHost = nonGamingProtocol.getLocalHostAddress();
         String clientLocalServerPort = nonGamingProtocol.getLocalServerPort();
-
-        // add peer
-        addPeerHost(currentUserID, clientHost, clientLocalServerPort);
         boolean isAccept = nonGamingProtocol.isInviteAccepted();
         int hostID = nonGamingProtocol.getHostID();
-        nonGamingOperationExecutor(currentUserID, command, userList, isAccept, hostID);
+        nonGamingOperationExecutor(currentUserID, command, userList, isAccept, hostID, clientHost, clientLocalServerPort);
     }
 
-    private void addPeerHost(int clientNumber, String hostAddr, String port){
-        PeerHosts newPeerHost = new PeerHosts(clientNumber, hostAddr, port);
+    private void addPeerHost(String userName, String hostAddr, String port){
+        PeerHosts newPeerHost = new PeerHosts(userName, hostAddr, port);
         Net.getInstance().getPeerHosts().add(newPeerHost);
     }
 
@@ -412,16 +409,16 @@ public class GameProcess {
         EnginePutMsg.getInstance().putMsgToCenter(vote);
     }
 
-    private void nonGamingOperationExecutor(int currentUserID, String command, String[] peerList, boolean isAccept, int hostID) {
+    private void nonGamingOperationExecutor(int currentUserID, String command, String[] peerList, boolean isAccept, int hostID, String clientHost, String clientLocalPort) {
         switch (command.trim()) {
             case "start":
                 start(currentUserID);
                 break;
             case "login":
-                login(currentUserID, peerList[0]);
+                login(currentUserID, peerList[0], clientHost, clientLocalPort);
                 break;
             case "peerLogin":
-                peerLogin(currentUserID, peerList[0]);
+                peerLogin(currentUserID, peerList[0], clientHost, clientLocalPort);
                 break;
             case "logout":
                 logout(currentUserID);
@@ -572,11 +569,15 @@ public class GameProcess {
         return team;
     }
 
-    private void login(int currentUserID, String userName) {
+    private void login(int currentUserID, String userName, String clientHost, String clientLocalServerPort) {
         // same username, replicated login requests not allowed
         if (!db.contains(userName) && db.get(currentUserID) == null) {
             db.put(currentUserID, userName);
             userList.add(new Users(currentUserID, userName));
+
+            // add peer
+            addPeerHost(userName, clientHost, clientLocalServerPort);
+
             //send currentUserList back to client
             userListToClient();
         } else {
@@ -586,10 +587,13 @@ public class GameProcess {
     }
 
     // Follower handles login request comes from other peers -- binding userName & ID locally
-    private void peerLogin(int currentUserID, String userName){
+    private void peerLogin(int currentUserID, String userName, String clientHost, String clientLocalServerPort){
         if (!db.contains(userName) && db.get(currentUserID) == null) {
             db.put(currentUserID, userName);
             userList.add(new Users(currentUserID, userName));
+
+            // add peer
+            addPeerHost(userName, clientHost, clientLocalServerPort);
         } else {
             error(currentUserID, "User already Exists", "Peerlogin");
         }

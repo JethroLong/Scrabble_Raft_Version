@@ -3,7 +3,15 @@ package app.Models;
 import java.net.Socket;
 
 public class PeerHosts {
-    private int peerID;
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    private String userName;
     private String peerHost;
 
     public String getPeerPort() {
@@ -18,19 +26,13 @@ public class PeerHosts {
 
     public PeerHosts() {}
 
-    public PeerHosts(int peerID, String peerHost, String peerPort) {
-        this.peerID = peerID;
+    public PeerHosts(String userName, String peerHost, String peerPort) {
+        this.userName = userName;
         this.peerHost = peerHost;
         this.peerPort = peerPort;
     }
 
-    public int getPeerID() {
-        return peerID;
-    }
 
-    public void setPeerID(int peerID) {
-        this.peerID = peerID;
-    }
 
     public PeerHosts(String peerHost, String peerPort) {
         this.peerHost = peerHost;

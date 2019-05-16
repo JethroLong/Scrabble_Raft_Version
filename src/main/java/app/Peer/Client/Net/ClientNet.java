@@ -129,24 +129,10 @@ public class ClientNet implements Runnable {
 
 
     public void connectToNewPeers() {
-        //extract the hosts of all connected peers
-
-        //check if the updated peerServers contains new unconnected peers
-        // if yes, establish a new connection to the peer (with peer's local server port)
-//        String localHostAddr = "";
-//        try {
-//            localHostAddr = InetAddress.getLocalHost().getHostAddress();
-//        } catch (Exception e) {
-//
-//        }
-//        String localServerPort = GuiController.get().getLocalServerPort();
-//        String leaderAddr = LoginWindow.get().getLeaderAddr();
-//        String leaderPort = LoginWindow.get().getLeaderPortStr();
         for (PeerHosts peer : peerHosts) {
             int count = 0;
             for(PeerHosts connected : connectedPeerHosts){
-                if(peer.getPeerHost().equals(connected.getPeerHost())
-                && peer.getPeerPort().equals(connected.getPeerPort())){
+                if(peer.getUserName().trim().equals(connected.getUserName().trim())){
                     break;
                 }
                 count++;
@@ -154,26 +140,21 @@ public class ClientNet implements Runnable {
             if(count == connectedPeerHosts.size()){
                 String addr = peer.getPeerHost();
                 int portNum = Integer.parseInt(peer.getPeerPort());
+                String newPeerName = peer.getUserName();
                 System.out.println("new peer detected, start connection");
-                startConnection(addr, portNum);
+                startConnection(newPeerName, addr, portNum);
             }
 
-//            if (!(peer.getPeerHost().equals(localHostAddr)
-//                    && peer.getPeerPort().equals(localServerPort)
-//                    && !(peer.getPeerHost().equals(leaderAddr)
-//                    && peer.getPeerPort().equals(leaderPort)))) {
-//                System.out.println("new peer detected, start connection");
-//                startConnection(addr, portNum);
-//            }
         }
     }
 
-    private void startConnection(String Addr, int port) {
+    private void startConnection(String newPeerName, String Addr, int port) {
         try {
             Socket newPeer = new Socket(Addr, port);
 
             System.out.println("connection succ! ");
-            connectedPeerHosts.add(new PeerHosts(Addr, Integer.toString(port)));
+
+            connectedPeerHosts.add(new PeerHosts(newPeerName, Addr, Integer.toString(port)));
             connectedPeerSockets.add(newPeer);
 
             // open new net for new peer
