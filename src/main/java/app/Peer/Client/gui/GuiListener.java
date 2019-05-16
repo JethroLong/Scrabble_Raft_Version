@@ -202,6 +202,7 @@ public class GuiListener {
         int leaderID = backup.getLeaderID();
 
         // update Game state
+//        System.err.println("GuiController gameState: "+gameState);
         GuiController.get().updateLocalGameState(gameState);
 
         // update leaderID

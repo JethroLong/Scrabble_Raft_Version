@@ -841,6 +841,7 @@ public class GameProcess {
     private void updateGameState(){
         gameState.setBoard(board);
         gameState.setAgree(agree);
+        gameState.setGameHost(gameHost);
 //        gameState.setDb(db);
         gameState.setGameStart(gameStart);
         gameState.setNumPass(numPass);

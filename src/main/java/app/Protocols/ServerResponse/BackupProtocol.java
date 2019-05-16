@@ -41,6 +41,10 @@ public class BackupProtocol extends ScrabbleProtocol {
 
     private int leaderID;
 
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
+    }
+
     public BackupProtocol(){
         super.setTAG("BackupProtocol");
     }
