@@ -155,7 +155,7 @@ public class ClientNet implements Runnable {
                 String addr = peer.getPeerHost();
                 int portNum = Integer.parseInt(peer.getPeerPort());
                 String newPeerName = peer.getUserName();
-                System.out.println("new peer detected, start connection");
+                System.out.println("new peer detected, start connection to "+ newPeerName);
                 startConnection(newPeerName, addr, portNum);
             }
 
@@ -176,7 +176,7 @@ public class ClientNet implements Runnable {
             initialServer(newPeer, toNetPutMsg);
 
             // login to peer server process  command -- peerLogin
-            GuiController.get().loginPeerServer(GuiController.get().getLocalServerPort());
+            GuiController.get().loginPeerServer(newPeerName, GuiController.get().getLocalServerPort());
 
             // send register msg for map clientName and socket to peer Server
             String clientName = GuiController.get().getUsername();

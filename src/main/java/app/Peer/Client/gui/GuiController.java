@@ -4,7 +4,11 @@ package app.Peer.Client.gui;
 import app.Models.GameState;
 import app.Models.Player;
 import app.Models.Users;
+import app.Peer.Client.Net.ClientNet;
+import app.Peer.Client.Net.ClientNetSendMsg;
 import app.Peer.Server.controllers.gameEngine.GameProcess;
+import app.Peer.Server.controllers.net.Net;
+import app.Peer.Server.controllers.net.NetSendMsg;
 import app.Protocols.GamingProtocol.BrickPlacing;
 import app.Protocols.GamingProtocol.GamingOperationProtocol;
 import app.Protocols.NonGamingProtocol.NonGamingProtocol;
@@ -12,6 +16,7 @@ import app.Protocols.RaftProtocol.RegisterProtocol;
 import com.alibaba.fastjson.JSON;
 
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class GuiController {
@@ -252,11 +257,13 @@ public class GuiController {
     }
 
     // after establishing connection to a new peer, login to the peer server process to bind username & userID in that peer
-    public void loginPeerServer(String localServerPort){
+    public void loginPeerServer(String peerServerName, String localServerPort){
         String[] selfName = new String[1];
         selfName[0] = username;
         NonGamingProtocol nonGamingProtocol =new NonGamingProtocol("peerLogin", selfName, localServerPort, this.localHostAddress);
-        GuiSender.get().sendToCenter(nonGamingProtocol);
+        String jsonStr = JSON.toJSONString(nonGamingProtocol);
+        Socket peerServerSocket = ClientNet.getInstance().getPeerNameSocketMap().get(peerServerName);
+        new Thread(new ClientNetSendMsg(jsonStr, peerServerSocket)).start();
     }
 
     void invitePlayers(String[] players) {
