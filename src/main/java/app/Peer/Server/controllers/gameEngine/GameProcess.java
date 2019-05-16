@@ -190,11 +190,7 @@ public class GameProcess {
 
 //                win(currentUserID);  disconnection should not terminate the game
             }
-            //remove disconnected users
-//            if (db.containsKey(currentUserID)) {
-//                db.remove(currentUserID);
-//                userList.remove(userIndexSearch(currentUserID));
-//            }
+
             userRemove(userList.get(userIndexSearch(currentUserID)));
             userListToClient();
 
@@ -204,18 +200,32 @@ public class GameProcess {
         } else if (db.containsKey(currentUserID)) {
             //remove disconnected users
             userRemove(userList.get(userIndexSearch(currentUserID)));
-//            if (db.containsKey(currentUserID)) {
-//                db.remove(currentUserID);
-//                userList.remove(userIndexSearch(currentUserID));
-//            }
+
             userListToClient();
         } else {
             //Not exist
         }
 
         // remove peerHost
-        Net.getInstance().getPeerHosts().remove(currentUserID);
+        int removeIndex = peerHostsIndexSearch(db.get(currentUserID));
+        Net.getInstance().getPeerHosts().remove(removeIndex);
     }
+
+    private int peerHostsIndexSearch(String userName){
+        int index = 0;
+        for (PeerHosts peer : Net.getInstance().getPeerHosts()) {
+            if (userName.trim().equals(peer.getUserName())) {
+                break;
+            }
+            index++;
+        }
+        if (index < userList.size()){
+            return index;
+        }else {
+            return -1; // not found
+        }
+    }
+
 
     private void recovery(){
         recoverGlobalParas(GuiController.get().getGameState());  //new leader's gameState is the agreed global gameState
@@ -330,7 +340,7 @@ public class GameProcess {
 
     private boolean gameEndCheck() {
 //        int index = playerIndexSearch(currentUserID);
-        if (numPass == playerList.size()) {
+        if (numPass == playerList.size() && playerList.size() <= 1) {
             return true;  // game should be terminated
         } else {
             return false;  // game should continue
@@ -433,7 +443,7 @@ public class GameProcess {
                 if (gameStart == true) {
                     if (playerList.get(playerIndexSearch(currentUserID)) != null) {
                         playerList.remove(playerIndexSearch(currentUserID));
-                        teams.get(gameHost).remove(playerIndexSearch(currentUserID));
+                        teams.get(gameHost).remove(playerIndexSearch(currentUserID)); //remove player who has quit
 //                        win(currentUserID);
                     }
                 }
