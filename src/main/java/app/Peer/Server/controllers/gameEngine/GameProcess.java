@@ -890,13 +890,15 @@ public class GameProcess {
         for(Team oldTeam : oldTeams){
             int hostID = oldTeam.getHostID();
             ArrayList<Users> newTeam = new ArrayList<>();
-            teamsInWait.add(newTeam);
-            teams.put(hostID, newTeam);
             for (Users oldMember : oldTeam.getTeamMember()){
                 int newMemberIndex = userIndexSearch(oldMember.getUserName());
-                Users newMember = userList.get(newMemberIndex);
-                newTeam.add(newMember);
+                if (newMemberIndex != -1){
+                    Users newMember = userList.get(newMemberIndex);
+                    newTeam.add(newMember);
+                }
             }
+            teamsInWait.add(newTeam);
+            teams.put(hostID, newTeam);
         }
     }
 
@@ -907,9 +909,11 @@ public class GameProcess {
             int inGameSequence = oldPlayer.getInGameSequence();
             String oldPlayerName = oldPlayer.getUser().getUserName();
             int newPlayerUserIndex = userIndexSearch(oldPlayerName);
-            Player newPlayer = new Player(userList.get(newPlayerUserIndex), inGameSequence);
-            newPlayer.setPoints(oldPoints);
-            playerList.add(newPlayer);
+            if (newPlayerUserIndex != -1){
+                Player newPlayer = new Player(userList.get(newPlayerUserIndex), inGameSequence);
+                newPlayer.setPoints(oldPoints);
+                playerList.add(newPlayer);
+            }
         }
     }
 
@@ -919,8 +923,10 @@ public class GameProcess {
         for(Users oldUser : oldUserList){
             if (oldUser.getUserID() == oldInitiator){
                 int newIndex = userIndexSearch(oldUser.getUserName());
-                newInitiatorID = userList.get(newIndex).getUserID();
-                break;
+                if (newIndex != -1){
+                    newInitiatorID = userList.get(newIndex).getUserID();
+                    break;
+                }
             }
         }
         return newInitiatorID;
@@ -935,8 +941,10 @@ public class GameProcess {
             for(Users oldUser : oldUserList){
                 if (oldPlayerID == oldUser.getUserID()){
                     int newIndex = userIndexSearch(oldUser.getUserName());
-                    int newPlayerID = userList.get(newIndex).getUserID();
-                    newPlayersID[arrayIndex++] = newPlayerID;
+                    if (newIndex != -1) {
+                        int newPlayerID = userList.get(newIndex).getUserID();
+                        newPlayersID[arrayIndex++] = newPlayerID;
+                    }
                 }
             }
         }
@@ -953,7 +961,9 @@ public class GameProcess {
                 break;
             }
         }
-        oldLatestBrickPlacing.getBrickPlacing().setUserID(newID);
+        if (newID != -1) {
+            oldLatestBrickPlacing.getBrickPlacing().setUserID(newID);
+        }
         return oldLatestBrickPlacing;
     }
 
@@ -962,7 +972,9 @@ public class GameProcess {
         for(Users oldUser : oldUserList){
             if(oldUser.getUserID() == oldGameHost){
                 int newIndex = userIndexSearch(oldUser.getUserName());
-                return userList.get(newIndex).getUserID();
+                if (newIndex != -1) {
+                    return userList.get(newIndex).getUserID();
+                }
             }
         }
         return ID_PLACEHOLDER;
