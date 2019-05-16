@@ -52,4 +52,18 @@ public class PeerHosts {
     public void setPeerHost(String peerHost) {
         this.peerHost = peerHost;
     }
+
+    public boolean equals(PeerHosts peer) {
+        if ((peer == null) || (getClass() != peer.getClass())) {
+            return false;
+        } else {
+            if (this.userName.equals("leader") || peer.getUserName().equals("leader")) {
+                return this.peerHost.equals(peer.getPeerHost()) && this.peerPort.equals(peer.getPeerPort());
+            } else {
+                return this.userName.equals(peer.getUserName())
+                        && this.peerHost.equals(peer.getPeerHost())
+                        && this.peerPort.equals(peer.getPeerPort());
+            }
+        }
+    }
 }

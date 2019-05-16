@@ -208,7 +208,6 @@ public class GuiListener {
         ClientNet.getInstance().setLeaderID(leaderID);
 
         // convert to array list
-
         ArrayList<PeerHosts> newPeerHosts = new ArrayList<PeerHosts>();
         for(PeerHosts peer : peerHosts){
             newPeerHosts.add(peer);

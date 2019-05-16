@@ -146,7 +146,11 @@ public class ClientNet implements Runnable {
             for(PeerHosts connected : connectedPeerHosts){
 //                System.out.println("ClientNet peer: " + peer);
 //                System.out.println("ClientNet connected: " + connected);
-                if(peer.getUserName().trim().equals(connected.getUserName().trim())){
+//                if(peer.getPeerHost().equals(connected.getPeerHost())
+//                && peer.getPeerPort().equals(connected.getPeerPort())){
+//                    break;
+//                }
+                if (peer.equals(connected)) {
                     break;
                 }
                 count++;
@@ -203,8 +207,10 @@ public class ClientNet implements Runnable {
                 socket = new Socket(ipAddr, portNum);
 
                 connectedPeerSockets.add(socket);
+
                 String userName = GuiController.get().getUsername();
-                connectedPeerHosts.add(new PeerHosts(userName, ipAddr, Integer.toString(portNum)));
+                connectedPeerHosts.add(new PeerHosts("leader", ipAddr, Integer.toString(portNum)));
+
 
                 if (GuiController.get().isLeader()) {
                     leaderSocket = socket;
