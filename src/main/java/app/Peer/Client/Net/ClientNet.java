@@ -145,6 +145,8 @@ public class ClientNet implements Runnable {
         for (PeerHosts peer : peerHosts) {
             int count = 0;
             for(PeerHosts connected : connectedPeerHosts){
+                System.out.println("ClientNet peer: " + peer);
+                System.out.println("ClientNet connected: " + connected);
                 if(peer.getPeerHost().equals(connected.getPeerHost())
                 && peer.getPeerPort().equals(connected.getPeerPort())){
                     break;

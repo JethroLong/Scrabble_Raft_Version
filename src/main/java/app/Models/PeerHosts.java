@@ -41,6 +41,12 @@ public class PeerHosts {
         return peerHost;
     }
 
+    @Override
+    public String toString() {
+        return String.format("peerID: %d, peerHost: %s, peerPort: %s",
+                this.peerID, this.peerHost, this.peerPort);
+    }
+
     public void setPeerHost(String peerHost) {
         this.peerHost = peerHost;
     }
