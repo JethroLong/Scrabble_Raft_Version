@@ -61,6 +61,9 @@ public class RaftController implements Runnable {
             GuiController.get().setLeader(true);
             broadcastHeartBeat();
             setLeaderName(GuiController.get().getUsername());
+
+            // re
+            GuiController.get().serverRecovery();
         }
         else GuiController.get().setLeader(false);
     }
