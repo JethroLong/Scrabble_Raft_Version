@@ -361,17 +361,19 @@ public class GuiController {
 
     public void serverRecovery(){
         // check if in a game
-        if (gameState.isGameStart()){
+//        if (gameState.isGameStart()){
             /////////
             // rebind userID and username -- all id related fields in gameState ---> newGameSate
             ////////
             GameProcess.getInstance().setGameState(gameState); // newGameState
-            NonGamingProtocol recovery = new NonGamingProtocol();
-            recovery.setCommand("recovery");
-            GuiSender.get().sendToCenter(recovery); // a request for recovery
-        }else{
-            GameProcess.getInstance().setGameState(gameState);
-        }
+//            NonGamingProtocol recovery = new NonGamingProtocol();
+////            recovery.setCommand("recovery");
+            GameProcess.getInstance().recovery();
+//            GuiSender.get().sendToCenter(recovery); // a request for recovery
+//        }
+//        else{
+//            GameProcess.getInstance().setGameState(gameState);
+//        }
     }
 }
 

@@ -146,6 +146,8 @@ public class GameProcess {
     private void gamingOperation(int currentUserID, GamingOperationProtocol gamingOperationProtocol) {
         //command: vote, voteResponse, disconnect
         String command = gamingOperationProtocol.getCommand();
+        int index = userIndexSearch(currentUserID);
+        String userName = userList.get(index).getUserName();
         switch (command) {
             case "vote":
                 if (gameStart && (whoseTurn == playerList
@@ -167,7 +169,7 @@ public class GameProcess {
                 }
                 break;
             case "disconnect":
-                disconnect(currentUserID);
+                disconnect(currentUserID, userName);
                 break;
             default:
                 break;
@@ -183,7 +185,7 @@ public class GameProcess {
         }
     }
 
-    private void disconnect(int currentUserID) {
+    private void disconnect(int currentUserID, String userName) {
         if (gameStart == true) {
             if (playerList.get(playerIndexSearch(currentUserID)) != null) {
                 playerList.remove(playerIndexSearch(currentUserID));
@@ -207,8 +209,11 @@ public class GameProcess {
         }
 
         // remove peerHost
-        int removeIndex = peerHostsIndexSearch(db.get(currentUserID));
-        Net.getInstance().getPeerHosts().remove(removeIndex);
+        System.err.println("Server peerHosts: "+ Net.getInstance().getPeerHosts());
+        int removeIndex = peerHostsIndexSearch(userName);
+        if (removeIndex > -1) {
+            Net.getInstance().getPeerHosts().remove(removeIndex);
+        }
     }
 
     private int peerHostsIndexSearch(String userName){
@@ -227,7 +232,7 @@ public class GameProcess {
     }
 
 
-    private void recovery(){
+    public void recovery(){
         recoverGlobalParas(GuiController.get().getGameState());  //new leader's gameState is the agreed global gameState
         userListToClient();
         if (gameStart){
@@ -450,8 +455,8 @@ public class GameProcess {
             case "leave":
                 leaveTeam(currentUserID, hostID);
                 break;
-            case "recovery":
-                recovery();
+//            case "recovery":
+//                recovery();
             default:
                 error(currentUserID, "Unknown Error", "lobby");
                 break;
@@ -604,6 +609,7 @@ public class GameProcess {
 
             // add peer
             addPeerHost(userName, clientHost, clientLocalServerPort);
+            System.err.println("after peerLogin:  "+ Net.getInstance().getPeerHosts());
         } else {
             error(currentUserID, "User already Exists", "Peerlogin");
         }

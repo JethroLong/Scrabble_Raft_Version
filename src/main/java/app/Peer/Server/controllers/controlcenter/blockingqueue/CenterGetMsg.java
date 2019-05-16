@@ -36,7 +36,7 @@ public class CenterGetMsg implements Runnable {
         try {
             ScrabbleProtocol temp;
             String msg = packedMsg.getMsg();
-            System.err.println("CenterGetMsg receive msg: " + msg);
+//            System.err.println("CenterGetMsg receive msg: " + msg);
             if (!msg.equals("null")) {
                 temp = JSON.parseObject(msg, ScrabbleProtocol.class);
                 String type = temp.getTAG();
