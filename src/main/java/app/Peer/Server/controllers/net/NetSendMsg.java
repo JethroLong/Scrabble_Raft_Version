@@ -67,7 +67,7 @@ public class NetSendMsg implements Runnable {
         client = Net.getInstance().getClientNameSocketMap().get(clientName);
 //        if(client != null){
         try{
-            if (!client.isClosed()) {
+            if (!client.isClosed() && client != null) {
 //                System.out.println("NegSendMsg Send to Peer() .." + client);
                 sendMsgOperation(msg);
             }
@@ -91,9 +91,11 @@ public class NetSendMsg implements Runnable {
 
     private void sendMsgOperation(String msg){
         try {
-            PrintWriter printWriter = new PrintWriter(new DataOutputStream(client.getOutputStream()));
-            printWriter.println(bouncyCastleBase64(msg));
-            printWriter.flush();
+            if (client != null) {
+                PrintWriter printWriter = new PrintWriter(new DataOutputStream(client.getOutputStream()));
+                printWriter.println(bouncyCastleBase64(msg));
+                printWriter.flush();
+            }
 //            System.err.println("2: "+client);
 
         } catch (Exception e) {
