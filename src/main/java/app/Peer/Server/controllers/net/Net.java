@@ -3,7 +3,7 @@ package app.Peer.Server.controllers.net;
 
 import app.Models.PeerHosts;
 import app.Peer.Client.gui.GuiController;
-import app.Peer.Server.BackUp.Scheduler;
+import app.Peer.Server.BackUp.backupScheduler;
 import app.Peer.Server.controllers.net.blockingqueue.NetGetMsg;
 import app.Peer.Server.controllers.net.blockingqueue.NetPutMsg;
 import app.Protocols.Pack;
@@ -11,7 +11,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -135,7 +134,7 @@ public class Net implements Runnable{
             while (flag){
 
                 if (GuiController.get().isLeader()){
-                    new Thread(new Scheduler()).start(); //leader starts back up task
+                    new Thread(new backupScheduler()).start(); //leader starts back up task
                 }
 
                 client = server.accept(); //server reception

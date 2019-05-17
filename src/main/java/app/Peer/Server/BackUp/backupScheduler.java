@@ -3,14 +3,14 @@ package app.Peer.Server.BackUp;
 import java.util.Timer;
 
 
-public class Scheduler implements Runnable{
+public class backupScheduler implements Runnable{
     private Timer timer;
 
-    public Scheduler() {
+    public backupScheduler() {
         this.timer = new Timer();
     }
 
-//    private volatile static Scheduler scheduler;
+//    private volatile static backupScheduler scheduler;
 
 
     @Override

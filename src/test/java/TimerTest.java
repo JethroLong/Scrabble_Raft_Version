@@ -1,9 +1,7 @@
-import app.Peer.Server.BackUp.Scheduler;
-
-import java.util.Timer;
+import app.Peer.Server.BackUp.backupScheduler;
 
 public class TimerTest {
     public static void main(String[] args) {
-        new Thread(new Scheduler()).start();
+        new Thread(new backupScheduler()).start();
     }
 }
