@@ -1,4 +1,4 @@
-package app.Peer.Server.raft.Blockingqueue;
+package app.Peer.Raft.Blockingqueue;
 
 import java.util.concurrent.BlockingQueue;
 import app.Protocols.Pack;

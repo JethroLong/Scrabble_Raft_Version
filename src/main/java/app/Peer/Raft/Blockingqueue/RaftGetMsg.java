@@ -1,7 +1,6 @@
-package app.Peer.Server.raft.Blockingqueue;
+package app.Peer.Raft.Blockingqueue;
 
-import app.Peer.Server.controllers.gameEngine.GameProcess;
-import app.Peer.Server.raft.RaftController;
+import app.Peer.Raft.RaftController;
 import app.Protocols.Pack;
 
 import java.util.concurrent.BlockingQueue;

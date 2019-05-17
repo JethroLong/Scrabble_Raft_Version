@@ -1,4 +1,4 @@
-package app.Peer.Server.raft;
+package app.Peer.Raft;
 
 import java.util.Timer;
 

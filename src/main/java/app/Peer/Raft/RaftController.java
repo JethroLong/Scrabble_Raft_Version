@@ -1,21 +1,16 @@
-package app.Peer.Server.raft;
+package app.Peer.Raft;
 
-import app.Models.PeerHosts;
 import app.Peer.Client.Net.ClientNet;
 import app.Peer.Client.gui.GuiController;
-import app.Peer.Server.controllers.controlcenter.ControlCenter;
-import app.Peer.Server.controllers.gameEngine.GameProcess;
 import app.Peer.Server.controllers.net.Net;
-import app.Peer.Server.raft.Blockingqueue.RaftGetMsg;
-import app.Peer.Server.raft.Blockingqueue.RaftPutMsg;
+import app.Peer.Raft.Blockingqueue.RaftGetMsg;
+import app.Peer.Raft.Blockingqueue.RaftPutMsg;
 import app.Protocols.Pack;
 import app.Protocols.ScrabbleProtocol;
 import com.alibaba.fastjson.JSON;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.*;
 
@@ -159,8 +154,8 @@ public class RaftController implements Runnable {
             This method is used to send massages to any peer.
             The first parameter should be of any subtype of ScrabbleProtocol.
             The second parameter could be either:
-            0 - which lets the net to broadcast the massage to all peers(INCLUDING myself);
-            peerId - which lets the net to unicast the massage to the peer with given peerId.
+            "broadcast" - which lets the net to broadcast the massage to all peers(INCLUDING myself);
+            username - which lets the net to unicast the massage to the peer with given username.
          **/
         String jsonStr = JSON.toJSONString(protocol);
         Pack pack = new Pack(username, jsonStr);

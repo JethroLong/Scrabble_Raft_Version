@@ -1,16 +1,7 @@
-package app.Peer.Server.raft;
+package app.Peer.Raft;
 
-import app.Models.PeerHosts;
-import app.Peer.Client.Net.ClientNet;
-import app.Peer.Client.gui.GuiController;
-import app.Peer.Client.gui.GuiSender;
-import app.Peer.Server.controllers.net.Net;
-import app.Protocols.Pack;
-import app.Protocols.RaftProtocol.HeartBeatProtocol;
 import app.Protocols.RaftProtocol.StartElectionProtocol;
-import com.alibaba.fastjson.JSON;
 
-import java.util.ArrayList;
 import java.util.TimerTask;
 
 public class NewElectionTask extends TimerTask {
