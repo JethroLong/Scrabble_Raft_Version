@@ -2,7 +2,7 @@
 The model-view-controller is used in the project.The model class includes the dynamic data structure used for managing data, logic and rules of the game. 
 The “GameState” class represents the game state at each turn which includes information such as whose turn it is, game host address, game board information, etc. The “PeerHosts” class is used to record all the peer information in the system. The “player” class includes all the player status in the game such as turn sequence and username. The “Team” class represents information about team host and team members. The “Users” class consists of user id and user name. 
 The GUI classes are the view, responsible for displaying messages to players and listening button actions. In addition, both client and server controller are constructed between model and view to process the input from one of these two components and send the output to the other.
-The system is based on a peer-to-peer network, each peer contains a client and a server class. The client part of each peer connects with the server part of other peers. A leader server sends log to all other peer servers every 10 seconds.
+The system is based on a peer-to-peer network, each peer contains a client and a server class. The client part of each peer connects with the server part of other peers. A leader server sends log to all other peer servers every 15 seconds.
 
 ![<center>System Architecture<center\>](ArchButterfly-Dependency-Peer.png)
 
