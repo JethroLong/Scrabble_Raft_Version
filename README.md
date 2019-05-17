@@ -4,7 +4,7 @@ The “GameState” class represents the game state at each turn which includes 
 The GUI classes are the view, responsible for displaying messages to players and listening button actions. In addition, both client and server controller are constructed between model and view to process the input from one of these two components and send the output to the other.
 The system is based on a peer-to-peer network, each peer contains a client and a server class. The client part of each peer connects with the server part of other peers. A leader server sends log to all other peer servers every 15 seconds.
 
-![<center>System Architecture<center\>](ArchButterfly-Dependency-Peer.png)
+![<center>System Architecture</center>](https://github.com/JethroLong/Scrabble_Raft_Version/ArchButterfly-Dependency-Peer.png)
 
 
 # Scrabble Game rule:
@@ -17,7 +17,7 @@ Words can be only read from left to right or top to bottom.
 
 # Communication Protocols:
 The message exchange protocols fall into four categories, and all of them extend the same super class called "ScrabbleProtocol". The overview of the protocol package structure is shown as below:
-![<center>Communication Protocols<center\>](ClusterCallButterfly-Protocols.png)
+![<center>Communication Protocols</center>](https://github.com/JethroLong/Scrabble_Raft_Version/ClusterCallButterfly-Protocols.png)
 
 # Application usage:
 A person can choose to be a leader server in the login window. By entering a valid port number and username, the player can log into the lobby window. Other players can login by entering the correct ip address and port number of the leader server. Another way for other plays to login is to enter the encrypted invitation code in the “other login” panel. After successfully logging into the lobby window, the player can see other online players. Players can invite any other player in the lobby to start a game. Players who receive an invitation can choose to accept or reject the invitation. Upon acceptance of the invitation, the player will be added to the inviter’s team and be listed with other players of the team in “Current Team Members” field. When the team has more than one player, the inviter can start the game. 
