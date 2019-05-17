@@ -24,7 +24,8 @@ public class NetThread implements Runnable {
     private int clientID;
 
 
-    public NetThread(Socket client, Hashtable clientDataHash, Hashtable clientNameHash, BlockingQueue toNetPutMsg, int clientID) {
+    public NetThread(Socket client, Hashtable clientDataHash, Hashtable clientNameHash,
+                     BlockingQueue toNetPutMsg, int clientID) {
         this.client = client;
         this.clientDataHash = clientDataHash;
         this.clientNameHash = clientNameHash;
@@ -89,7 +90,12 @@ public class NetThread implements Runnable {
             System.out.println("client "+clientID+" is closed!");
             Net.getInstance().getClientDataHsh().remove(client);
             Net.getInstance().getClientNameHash().remove(clientID);
-            toNetPutMsg.put(new Pack(clientID, JSON.toJSONString(new GamingOperationProtocol("disconnect"))));
+            if (Net.getInstance().getClientNameSocketMap().containsValue(client)) {
+                Net.getInstance().getClientNameSocketMap().entrySet()
+                        .removeIf(entry -> (client.equals(entry.getValue())));
+            }
+            toNetPutMsg.put(new Pack(clientID, JSON.toJSONString(
+                    new GamingOperationProtocol("disconnect"))));
             
         } catch (Exception e) {
             e.printStackTrace();

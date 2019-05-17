@@ -16,7 +16,7 @@ public class ClientNetPutMsg implements Runnable{
         while (flag){
             try {
                 String temp = fromNetThread.take();
-                System.err.println("Client to S: "+ temp);
+                System.err.println("ClientNetPugMsg receive msg: " + temp);
                 toCenter.put(temp);
             } catch (InterruptedException e) {
                 e.printStackTrace();

@@ -91,9 +91,12 @@ public class NetSendMsg implements Runnable {
 
     private void sendMsgOperation(String msg){
         try {
-            PrintWriter printWriter = new PrintWriter(new DataOutputStream(client.getOutputStream()));
-            printWriter.println(bouncyCastleBase64(msg));
-            printWriter.flush();
+            // double check the client not equal to null
+            if (client != null) {
+                PrintWriter printWriter = new PrintWriter(new DataOutputStream(client.getOutputStream()));
+                printWriter.println(bouncyCastleBase64(msg));
+                printWriter.flush();
+            }
 //            System.err.println("2: "+client);
 
         } catch (Exception e) {
