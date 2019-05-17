@@ -83,6 +83,9 @@ public class GameProcess {
         teams = new ConcurrentHashMap<>();
         board = new char[BOARD_SIZE][BOARD_SIZE];
         gameState = new GameState();
+        playerList = new ArrayList<Player>();
+        playersID = null;
+        latestBrickPlacing = new GamingOperationProtocol();
     }
 
     //Singleton GameProcess
@@ -199,14 +202,18 @@ public class GameProcess {
             if(userIndex != -1){
                 userList.remove(userIndex); // disconnected user will be removed
             }
-            gameEndCheck();
+
+            if(gameEndCheck()){
+                win(currentUserID);
+                //reset gameEndCheck parameters
+                numPass = 0;
+                gameLoopStartSeq = 0;
+            }else{
+
+            }
 
 //            userRemove(userList.get(userIndexSearch(currentUserID)));
             userListToClient();
-
-            //reset gameEndCheck parameters
-//            numPass = 0;
-//            gameLoopStartSeq = 0;
         } else if (db.containsKey(currentUserID)) {
             //remove disconnected users
             userRemove(userList.get(userIndexSearch(currentUserID)));
@@ -221,7 +228,7 @@ public class GameProcess {
         int removeIndex = peerHostsIndexSearch(userName);
         if (removeIndex > -1) {
             Net.getInstance().getPeerHosts().remove(removeIndex);
-        }
+}
     }
 
     private int peerHostsIndexSearch(String userName){
@@ -328,6 +335,7 @@ public class GameProcess {
     }
 
     private void hasNotVote(int currentUserID, GamingOperationProtocol gamingOperationProtocol) {
+        latestBrickPlacing = gamingOperationProtocol;
         BrickPlacing bp = gamingOperationProtocol.getBrickPlacing();
         //initial check gameEnd conditions (1. if every player had a turn -- sequence loop check  2. num of direct pass)
         if (bp.getBrick() != null) {
@@ -1015,7 +1023,7 @@ public class GameProcess {
         }
 
         // update playerList
-        if (newGameState.getPlayerList() !=null){
+        if (newGameState.getPlayerList() != null){
             recoverPlayerList(newGameState.getPlayerList());
         }
 
