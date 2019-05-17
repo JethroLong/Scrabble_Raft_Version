@@ -200,6 +200,7 @@ public class GameProcess {
             if (playerIndex != -1 && playerToRemove != null) {
                 if (whoseTurn == playerToRemove.getInGameSequence()) {  // next turn belongs to the player to be removed
                     playerList.remove(playerIndex);
+                    updatePlayersID();
                     if (gameEndCheck()) {
                         win(currentUserID);
                         //reset gameEndCheck parameters
@@ -211,6 +212,8 @@ public class GameProcess {
                     }
                 } else { // next turn does not belong to the player to be removed
                     playerList.remove(playerIndex);
+                    updatePlayersID();
+
                     if (gameEndCheck()) {
                         win(currentUserID);
                         //reset gameEndCheck parameters
@@ -222,9 +225,9 @@ public class GameProcess {
                 }
             }
         } else { // if the game does not start
-            if (playerIndex != -1) {
-                playerList.remove(playerIndex);
-            }
+//            if (playerIndex != -1) {
+//                playerList.remove(playerIndex);
+//            }
         }
 
         userListToClient();
@@ -236,6 +239,7 @@ public class GameProcess {
             if (playerIndex != -1 && playerList.get(playerIndex) != null) {
                 if (whoseTurn == playerList.get(playerIndex).getInGameSequence()) {
                     playerList.remove(playerIndexSearch(currentUserID));
+                    updatePlayersID();
                     if (gameEndCheck()) {
                         win(currentUserID);
                         //reset gameEndCheck parameters
@@ -246,6 +250,8 @@ public class GameProcess {
                         boardUpdate(currentUserID);
                     }
                 } else {
+                    playerList.remove(playerIndexSearch(currentUserID));
+                    updatePlayersID();
                     if (gameEndCheck()) {
                         win(currentUserID);
                         //reset gameEndCheck parameters
@@ -833,6 +839,15 @@ public class GameProcess {
             return false;
         }
 
+    }
+
+    private void updatePlayersID(){
+        if(playerList != null) {
+            playersID = new int[playerList.size()];
+            for(int i = 0; i < playerList.size(); i++){
+                playersID[i] = playerList.get(i).getUser().getUserID();
+            }
+        }
     }
 
     private void boardUpdate(int currentUserID) {
