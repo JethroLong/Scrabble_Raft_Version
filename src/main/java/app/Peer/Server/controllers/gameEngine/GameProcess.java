@@ -916,6 +916,20 @@ public class GameProcess {
         }
         int size = winner.size();
         teamStatusUpdate(teams.get(gameHost), "available");
+
+        for (Player member : winner){
+            if (member != null) {
+                member.getUser().setStatus("available");
+            }
+        }
+
+        for (Player player : playerList){
+            if (player != null){
+                int userIndex = userIndexSearch(player.getUser().getUserName());
+                userList.get(userIndex).setStatus("available");
+            }
+        }
+
         Player[] temp = winner.toArray(new Player[size]);
         Pack win = new Pack(currentUserID, JSON.toJSONString(new GamingSync(command, temp, whoseTurn, board, voteSuccess)));
         win.setRecipient(playersID);   //multi-cast
