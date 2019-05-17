@@ -5,14 +5,11 @@ import app.Models.GameState;
 import app.Models.PeerHosts;
 import app.Models.Player;
 import app.Models.Users;
-import app.Peer.Client.ClientCenter.blockingqueue.ClientCenterGetMsg;
-import app.Peer.Client.Gui;
 import app.Peer.Client.Net.ClientNet;
 import app.Peer.Client.Net.blockingqueue.ClientNetGetMsg;
-import app.Peer.Server.controllers.gameEngine.GameProcess;
-import app.Peer.Server.raft.NewElectionScheduler;
-import app.Peer.Server.raft.ElectionTask;
-import app.Peer.Server.raft.RaftController;
+import app.Peer.Raft.NewElectionScheduler;
+import app.Peer.Raft.ElectionTask;
+import app.Peer.Raft.RaftController;
 import app.Protocols.RaftProtocol.ElectedProtocol;
 import app.Protocols.RaftProtocol.ElectionProtocol;
 import app.Protocols.RaftProtocol.HeartBeatProtocol;
@@ -94,7 +91,7 @@ public class GuiListener {
     }
 
     private void processRaft(String str) {
-        // do some when receive raft related msg
+        // do some when receive Raft related msg
         // case 1: leader request(with newLeaderID)
         // case 2: heartbeat(use timer)
         // case 3:
@@ -349,8 +346,8 @@ public class GuiListener {
 //                GuiController.get().shutdown();
 
 
-//                int newLeaderID = raft election method() // raft algorithm -- leader election
-//                GameState agreedGameState = raft commonsense algorithm -- decide the new State
+//                int newLeaderID = Raft election method() // Raft algorithm -- leader election
+//                GameState agreedGameState = Raft commonsense algorithm -- decide the new State
 //                GuiController.get().updateGameState(agreedGameState);
 //
 //                if (GuiController.get().getId() == newLeaderID){

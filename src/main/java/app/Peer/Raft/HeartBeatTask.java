@@ -1,9 +1,7 @@
-package app.Peer.Server.raft;
+package app.Peer.Raft;
 
-import app.Peer.Client.gui.GuiController;
-import app.Protocols.Pack;
 import app.Protocols.RaftProtocol.HeartBeatProtocol;
-import com.alibaba.fastjson.JSON;
+
 import java.util.TimerTask;
 
 public class HeartBeatTask extends TimerTask implements Runnable {

@@ -1,10 +1,6 @@
-package app.Peer.Server.raft;
+package app.Peer.Raft;
 
-import app.Peer.Client.gui.GuiController;
-import app.Protocols.Pack;
 import app.Protocols.RaftProtocol.ElectionProtocol;
-import app.Protocols.RaftProtocol.StartElectionProtocol;
-import com.alibaba.fastjson.JSON;
 
 public class ElectionTask {
     /**

@@ -138,26 +138,6 @@ public class GameState {
         this.playersID = playersID;
     }
 
-//    public ConcurrentHashMap<Integer, String> getDb() {
-//        return db;
-//    }
-//
-//    public void setDb(ConcurrentHashMap<Integer, String> db) {
-//        this.db = db;
-//    }
-//
-//    public ConcurrentHashMap<Integer, ArrayList<Users>> getTeams() {
-//        return teams;
-//    }
-//
-//    public void setTeams(ConcurrentHashMap<Integer, ArrayList<Users>> teams) {
-//        this.teams = teams;
-//    }
-
-//    private ConcurrentHashMap<Integer, String> db;
-//    private ConcurrentHashMap<Integer, ArrayList<Users>> teams;
-//    private BlockingQueue<Pack> queue;
-
     public GameState() {
     }
 

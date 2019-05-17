@@ -5,12 +5,10 @@ import app.Peer.Server.controllers.controlcenter.blockingqueue.CenterGetMsg;
 import app.Peer.Server.controllers.controlcenter.blockingqueue.CenterPutMsg;
 import app.Peer.Server.controllers.gameEngine.GameEngine;
 import app.Peer.Server.controllers.net.Net;
-import app.Peer.Server.raft.Blockingqueue.RaftPutMsg;
-import app.Peer.Server.raft.RaftController;
+import app.Peer.Raft.RaftController;
 import app.Protocols.Pack;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import javax.swing.*;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
@@ -93,8 +91,8 @@ public class ControlCenter implements Runnable{
     }
     @Override
     public void run() {
-        pool.execute(new CenterGetMsg(fromNet,toEngine,toRaft)); // from net to to raft or engine
-        pool.execute(new CenterPutMsg(fromEngine,toNet)); // from raft, engine to net
+        pool.execute(new CenterGetMsg(fromNet,toEngine,toRaft)); // from net to to Raft or engine
+        pool.execute(new CenterPutMsg(fromEngine,toNet)); // from Raft, engine to net
     }
 
 
