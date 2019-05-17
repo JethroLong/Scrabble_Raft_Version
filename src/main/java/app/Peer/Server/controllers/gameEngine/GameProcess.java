@@ -241,6 +241,7 @@ public class GameProcess {
                     playerList.remove(playerIndexSearch(currentUserID));
                     updatePlayersID();
                     if (gameEndCheck()) {
+                        System.err.println("Game end check "+gameEndCheck());
                         win(currentUserID);
                         //reset gameEndCheck parameters
                         numPass = 0;
@@ -896,13 +897,11 @@ public class GameProcess {
         Player[] temp = winner.toArray(new Player[size]);
         Pack win = new Pack(currentUserID, JSON.toJSONString(new GamingSync(command, temp, whoseTurn, board, voteSuccess)));
         win.setRecipient(playersID);   //multi-cast
-        EnginePutMsg.getInstance().putMsgToCenter(win);
         teamStatusUpdate(teams.get(gameHost), "available");
-        userListToClient();
 
+        EnginePutMsg.getInstance().putMsgToCenter(win);
         //terminate game, reset parameters
         resetGameParameters();
-
         boardInitiation();
 
         if (teams.containsKey(gameHost)) {
@@ -910,6 +909,8 @@ public class GameProcess {
             teams.remove(gameHost, teams.get(gameHost));
             gameHost = ID_PLACEHOLDER;
         }
+
+        userListToClient();
     }
 
     private void updateGameState() {
