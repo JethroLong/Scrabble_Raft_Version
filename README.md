@@ -26,3 +26,11 @@ The player can also shutdown its server through the “shutdown” button in ser
 # Raft Implementation:
 The raft algorithm is implemented through the “raft” class within “peer” class to allow each peer follow the procedure of achieving consensus.
 If a player’s node dies during the game, all other players can continue the game as long as there are more than one players left in the game. 
+
+Two main parts of the Raft algorithms are implemented as followed:
+  *  **Leader Election** 
+     * The variables and related methods for Raft election procedure are defined in the class [RaftController](https://github.com/JethroLong/Scrabble_Raft_Version/blob/master/src/main/java/app/Peer/Raft/RaftController.java).  
+     * We defined protocols as the formats of Raft election related messages for peer communication in [RaftProtocol](https://github.com/JethroLong/Scrabble_Raft_Version/tree/master/src/main/java/app/Protocols/RaftProtocol).  
+     * The rules for processing specific received election protocols are define in [GuiListener](https://github.com/JethroLong/Scrabble_Raft_Version/blob/master/src/main/java/app/Peer/Client/gui/GuiListener.java).  
+  * **Log Replication**
+     * The code chunks related to log replication can be found at [BackupTask](https://github.com/JethroLong/Scrabble_Raft_Version/tree/master/src/main/java/app/Peer/Server). 
