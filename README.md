@@ -4,7 +4,7 @@ The “GameState” class represents the game state at each turn which includes 
 The GUI classes are the view, responsible for displaying messages to players and listening button actions. In addition, both client and server controller are constructed between model and view to process the input from one of these two components and send the output to the other.
 The system is based on a peer-to-peer network, each peer contains a client and a server class. The client part of each peer connects with the server part of other peers. A leader server sends log to all other peer servers every 10 seconds.
 
-
+![System Architecture](ArchButterfly-Dependency-Peer.png)
 
 # Scrabble Game rule:
 The game is played on a 20 by 20 grid board. 
