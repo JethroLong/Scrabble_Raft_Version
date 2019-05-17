@@ -20,7 +20,7 @@ public class ClientCenterPutMsg implements Runnable {
         while (true){
             try {
                 String temp = fromGui.take();
-                System.err.println("ClientCenterPutMsg: "+ temp);
+//                System.err.println("ClientCenterPutMsg: "+ temp);
                 toNet.put(temp);
 
 //                toNet.put(fromGui.take());

@@ -147,7 +147,10 @@ public class GameProcess {
         //command: vote, voteResponse, disconnect
         String command = gamingOperationProtocol.getCommand();
         int index = userIndexSearch(currentUserID);
-        String userName = userList.get(index).getUserName();
+        String userName = "";
+        if (index != -1){
+            userName = userList.get(index).getUserName();
+        }
         switch (command) {
             case "vote":
                 if (gameStart && (whoseTurn == playerList
@@ -189,11 +192,16 @@ public class GameProcess {
         if (gameStart == true) {
             if (playerList.get(playerIndexSearch(currentUserID)) != null) {
                 playerList.remove(playerIndexSearch(currentUserID));
-
 //                win(currentUserID);  disconnection should not terminate the game
             }
 
-            userRemove(userList.get(userIndexSearch(currentUserID)));
+            int userIndex = userIndexSearch(userName);
+            if(userIndex != -1){
+                userList.remove(userIndex); // disconnected user will be removed
+            }
+            gameEndCheck();
+
+//            userRemove(userList.get(userIndexSearch(currentUserID)));
             userListToClient();
 
             //reset gameEndCheck parameters
@@ -446,10 +454,16 @@ public class GameProcess {
                 break;
             case "quit":
                 if (gameStart == true) {
+                    int userIndex = userIndexSearch(currentUserID);
+                    if (userIndex != -1){
+                        userList.get(userIndex).setStatus("available"); // player who has quit half-way should be available again
+                    }
                     if (playerList.get(playerIndexSearch(currentUserID)) != null) {
                         playerList.remove(playerIndexSearch(currentUserID));
                         teams.get(gameHost).remove(playerIndexSearch(currentUserID)); //remove player who has quit
-//                        win(currentUserID);
+                    }
+                    if(playerList.size() <= 1){
+                        win(currentUserID);
                     }
                 }
             case "leave":

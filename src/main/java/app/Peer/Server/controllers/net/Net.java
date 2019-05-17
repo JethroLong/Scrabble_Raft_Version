@@ -126,11 +126,7 @@ public class Net implements Runnable{
     private void initialServer(int port, BlockingQueue toNetPutMsg){
         Socket client;
 
-        //check if the peer has an allocated clientID already.
-        if (GuiController.get().getId().equals("None")){
-            clientNumber = 1;
-        }
-
+        clientNumber = 1;
         try {
             server = new ServerSocket(port);
 //            LoginWindow loginWindow = LoginWindow.get();
