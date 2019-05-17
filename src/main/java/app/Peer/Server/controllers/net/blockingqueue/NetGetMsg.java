@@ -17,7 +17,7 @@ public class NetGetMsg implements Runnable {
         this.clientName = clientName;
         threadForSocket = new ThreadFactoryBuilder()
                 .setNameFormat("NetGetMsg-pool-%d").build();
-        pool = new ThreadPoolExecutor(10,100,0L, TimeUnit.MILLISECONDS,
+        pool = new ThreadPoolExecutor(20,100,0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
     }
 
@@ -27,7 +27,9 @@ public class NetGetMsg implements Runnable {
         while (flag){
             try {
                 Pack message = fromCenter.take();
-                pool.execute(new NetSendMsg(message,clientName));
+//                System.err.println("NetGetMsg: send msg: " + message.getMsg());
+
+                pool.execute(new NetSendMsg(message, clientName));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

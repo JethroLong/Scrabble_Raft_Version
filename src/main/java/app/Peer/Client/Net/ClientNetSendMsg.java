@@ -27,10 +27,13 @@ public class ClientNetSendMsg implements Runnable{
 
     private void sendMsgOperation(String msg, Socket socket){
         try {
+//            System.out.println(socket);
+            if(!socket.isClosed()){
+                PrintWriter out= new PrintWriter(socket.getOutputStream());
+                out.println(bouncyCastleBase64(msg));
+                out.flush();
+            }
 
-            PrintWriter out=new PrintWriter(socket.getOutputStream());
-            out.println(bouncyCastleBase64(msg));
-            out.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -29,19 +29,20 @@ public class ClientControlCenter implements Runnable{
         fromGui = new LinkedBlockingQueue<>();
         toNet = new LinkedBlockingQueue<>();
 //        initialClient();
-        logger.info(tag+" Initial clientControlCenter Complete!");
+        logger.info(tag + " Initial clientControlCenter Complete!");
     }
     public void initialClient(){
         threadForSocket = new ThreadFactoryBuilder()
                 .setNameFormat("Client-ControlCenter-pool-%d").build();
-        pool = new ThreadPoolExecutor(10,50,0L,TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
+        pool = new ThreadPoolExecutor(20,100,0L,TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>(1024),threadForSocket,new ThreadPoolExecutor.AbortPolicy());
 //        pool.execute(ClientNet.getInstance(fromNet,toNet));
 //        pool.execute(Gui.getInstance(toGui,fromGui));
-        logger.info(tag+" Initial Client Competed");
+        logger.info(tag+" Initial Client Completed");
     }
 
-    public void openNet(String ipAddr, int portNum,String username){
+    // execute when user click the login button
+    public void openNet(String ipAddr, int portNum, String username){
         try {
             pool.execute(ClientNet.getInstance(fromNet,toNet,ipAddr,portNum,username));
         }catch (Exception e){
@@ -52,8 +53,8 @@ public class ClientControlCenter implements Runnable{
     @Override
     public void run() {
         initialClient();
-        pool.execute(new ClientCenterGetMsg(fromNet,toGui,fromGui,toNet));
-        pool.execute(new ClientCenterPutMsg(fromNet,toGui,fromGui,toNet));
+        pool.execute(new ClientCenterGetMsg(fromNet,toGui,fromGui,toNet)); // from Net to Gui
+        pool.execute(new ClientCenterPutMsg(fromNet,toGui,fromGui,toNet)); // from Gui to Net
         LoginWindow.get().setCenter(this);
         pool.execute(LoginWindow.get());
         pool.execute(new GuiGetMsg(toGui));

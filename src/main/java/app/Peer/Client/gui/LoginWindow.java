@@ -11,7 +11,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Base64;
+import java.util.Random;
 
 public class LoginWindow implements Runnable {
     public ClientControlCenter getCenter() {
@@ -26,24 +29,26 @@ public class LoginWindow implements Runnable {
     private JFrame frame;
     private JTextField userName;
     private JTextField ip;
-    private JTextField port;
+    private JTextField leaderPort;
     private JCheckBox mode;
     private JTextArea inviteURL;
-    private String address;
+    private String leaderAddr;
+    private JTextField localPort;
 
-    public String getAddress() {
-        return address;
+    public String getLeaderAddr() {
+        return leaderAddr;
     }
 
-    public String getPortStr() {
-        return portStr;
+    public String getLeaderPortStr() {
+        return leaderPortStr;
     }
 
     public String getUserNameStr() {
         return userNameStr;
     }
 
-    private String portStr;
+    private String leaderPortStr;
+    private String localPortStr;
     private String userNameStr;
 
 
@@ -93,21 +98,25 @@ public class LoginWindow implements Runnable {
      */
     private void initialize() {
         frame = new JFrame();
-        frame.setBounds(100, 100, 350, 235);
+        frame.setBounds(100, 100, 350, 240);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().setLayout(null);
 
         JLabel lblUsername = new JLabel("Username:");
-        lblUsername.setBounds(47, 23, 66, 16);
+        lblUsername.setBounds(30, 23, 66, 16);
         frame.getContentPane().add(lblUsername);
 
         JLabel lblNewLabel = new JLabel("IP address:");
-        lblNewLabel.setBounds(45, 62, 68, 16);
+        lblNewLabel.setBounds(30, 62, 68, 16);
         frame.getContentPane().add(lblNewLabel);
 
-        JLabel lblNewLabel_1 = new JLabel("Port:");
-        lblNewLabel_1.setBounds(84, 100, 29, 16);
+        JLabel lblNewLabel_1 = new JLabel("Leader Port:");
+        lblNewLabel_1.setBounds(30, 95, 75, 16);
         frame.getContentPane().add(lblNewLabel_1);
+
+        JLabel lblNewLabel_2 = new JLabel("Local Port:");
+        lblNewLabel_2.setBounds(30, 125, 68, 16);
+        frame.getContentPane().add(lblNewLabel_2);
 
         userName = new JTextField();
         userName.setBounds(125, 18, 160, 26);
@@ -119,21 +128,26 @@ public class LoginWindow implements Runnable {
         frame.getContentPane().add(ip);
         ip.setColumns(10);
 
-        port = new JTextField();
-        port.setBounds(125, 95, 160, 26);
-        frame.getContentPane().add(port);
-        port.setColumns(10);
+        leaderPort = new JTextField();
+        leaderPort.setBounds(125, 95, 160, 26);
+        frame.getContentPane().add(leaderPort);
+        leaderPort.setColumns(10);
+
+        localPort = new JTextField();
+        localPort.setBounds(125, 125, 160, 26);
+        frame.getContentPane().add(localPort);
+        localPort.setColumns(10);
 
         mode = new JCheckBox("   Login as leader");
         frame.getContentPane().add(mode);
-        mode.setBounds(90, 125, 200, 30);
+        mode.setBounds(90, 155, 200, 30);
 
         JButton login = new JButton("Login");
-        login.setBounds(90, 155, 80, 30);
+        login.setBounds(90, 185, 80, 30);
         frame.getContentPane().add(login);
 
         JButton other = new JButton("Other Login");
-        other.setBounds(190, 155, 105, 30);
+        other.setBounds(190, 185, 105, 30);
         frame.getContentPane().add(other);
 
         KeyListener keyListener = new KeyListener() {
@@ -154,28 +168,23 @@ public class LoginWindow implements Runnable {
                 }
             }
         };
+
         login.addKeyListener(keyListener);
-        login.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                try {
-                    checkIfServer(); // if start as server
-                } catch (Exception e) {
-                    System.err.println(e.getMessage());
-                    JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
-                }
+        login.addActionListener((ActionEvent arg0) -> {
+            try {
+                checkIfServer(); // if start as server
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+                JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
             }
         });
 
         other.addKeyListener(keyListener);
-        other.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                try {
-                    changeView();
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
-                }
+        other.addActionListener((ActionEvent arg0) -> {
+            try {
+                changeView();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
             }
         });
         this.frame.setVisible(true);
@@ -193,6 +202,7 @@ public class LoginWindow implements Runnable {
 //        }
 //    }
 
+    // execute when user click the login button
     public void loginAction(String userName, String ipAddr, String portNum) {
         if (!userName.isEmpty()) {
             center.openNet(ipAddr, Integer.parseInt(portNum), userName);
@@ -257,25 +267,26 @@ public class LoginWindow implements Runnable {
         };
         login.addKeyListener(keyListener);
         back.addKeyListener(keyListener);
-        login.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                try {
-                    //decryption
-                    JSONArray inviteURLText = JSON.parseArray(bouncyCastleBase64(inviteURL.getText()));
-                    loginAction(userName.getText(), inviteURLText.getString(0), inviteURLText.getString(1));
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
-                }
+        login.addActionListener((ActionEvent arg0) -> {
+            try {
+                int localPortInt = (int)(Math.random() * (65535 - 1023) + 1024);
+                localPortStr = Integer.toString(localPortInt);
+                GuiController.get().setLocalServerPort(localPortStr);
+
+                GuiController.get().setLeader(false);
+
+                //decryption
+                JSONArray inviteURLText = JSON.parseArray(bouncyCastleBase64(inviteURL.getText()));
+                loginAction(userName.getText(), inviteURLText.getString(0), inviteURLText.getString(1));
+                new MonitorGui(localPortInt); // start server process
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
             }
         });
 
-        back.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                closeWindow();
-                initialize();
-            }
+        back.addActionListener((ActionEvent arg0) -> {
+            closeWindow();
+            initialize();
         });
 
 
@@ -289,22 +300,37 @@ public class LoginWindow implements Runnable {
     }
 
     private void checkIfServer() {
-        address = ip.getText();
-        portStr = port.getText();
+        leaderAddr = ip.getText();
+        leaderPortStr = leaderPort.getText();
+        localPortStr = localPort.getText();
         userNameStr = userName.getText();
         if (mode.isSelected()) {
-            address = "localhost";
-            if (portStr.equals("")) {
-                portStr = "6666";
+            try {
+                leaderAddr = InetAddress.getLocalHost().getHostAddress();
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
             }
-
+            if (localPortStr.equals("")){
+                localPortStr = "6666";
+            }
+            leaderPortStr = localPortStr;
+            GuiController.get().setLocalServerPort(leaderPortStr);
             GuiController.get().setLeader(true);
-            new MonitorGui(); //start server process as leader
-            loginAction(userNameStr, address, portStr);
+            new MonitorGui(Integer.parseInt(localPortStr)); //start server process as leader
+            loginAction(userNameStr, leaderAddr, leaderPortStr);
         } else {
+            int localPortInt = 0;
+            if (localPortStr.equals("")){
+                localPortInt = (int)(Math.random() * (65535 - 1023) + 1024);
+                localPortStr = Integer.toString(localPortInt);
+            }else{
+                localPortInt = Integer.parseInt(localPortStr);
+            }
+            GuiController.get().setLocalServerPort(localPortStr);
+
             GuiController.get().setLeader(false);
-            loginAction(userNameStr, address, portStr);
-            new MonitorGui(); // start server process
+            loginAction(userNameStr, leaderAddr, leaderPortStr);
+            new MonitorGui(localPortInt); // start server process
         }
     }
 

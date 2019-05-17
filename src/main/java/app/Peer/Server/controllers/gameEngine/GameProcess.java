@@ -1,11 +1,11 @@
 package app.Peer.Server.controllers.gameEngine;
 
 
-import app.Models.GameState;
-import app.Models.Player;
-import app.Models.Team;
-import app.Models.Users;
+import app.Models.*;
+import app.Peer.Client.gui.GuiController;
+import app.Peer.Server.controllers.controlcenter.ControlCenter;
 import app.Peer.Server.controllers.gameEngine.blockingqueque.EnginePutMsg;
+import app.Peer.Server.controllers.net.Net;
 import app.Protocols.GamingProtocol.BrickPlacing;
 import app.Protocols.GamingProtocol.GamingOperationProtocol;
 import app.Protocols.NonGamingProtocol.NonGamingProtocol;
@@ -16,6 +16,7 @@ import com.alibaba.fastjson.JSON;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,7 +31,7 @@ public class GameProcess {
     private int numVoted;
     private int agree;
     private int disagree;
-    private int voteInitiator;
+    private int voteInitiator = ID_PLACEHOLDER;
     private boolean voteSuccess;
     private int numPass;
     private int gameLoopStartSeq;
@@ -61,6 +62,17 @@ public class GameProcess {
     private ConcurrentHashMap<Integer, ArrayList<Users>> teams;
     private BlockingQueue<Pack> queue;
 
+    public int getIdByUserName(String username) {
+        for (Map.Entry entry : db.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+            if (entry.getValue().equals(username)) return (Integer) entry.getValue();
+        }
+        return 0;
+    }
+
+    public String getUserNameById(int id) {
+        return db.get(id);
+    }
 
     private volatile static GameProcess gameProcess;
 
@@ -72,6 +84,9 @@ public class GameProcess {
         teams = new ConcurrentHashMap<>();
         board = new char[BOARD_SIZE][BOARD_SIZE];
         gameState = new GameState();
+        playerList = new ArrayList<Player>();
+        playersID = null;
+        latestBrickPlacing = new GamingOperationProtocol();
     }
 
     //Singleton GameProcess
@@ -100,7 +115,8 @@ public class GameProcess {
             String type = temp.getTAG();
             switch (type) {
                 case "NonGamingProtocol":
-                    nonGamingOperation(currentUserID, JSON.parseObject(msg, NonGamingProtocol.class));
+                    NonGamingProtocol parsedObj = JSON.parseObject(msg, NonGamingProtocol.class);
+                    nonGamingOperation(currentUserID, parsedObj);
                     break;
                 case "GamingOperationProtocol":
                     gamingOperation(currentUserID, JSON.parseObject(msg, GamingOperationProtocol.class));
@@ -114,17 +130,31 @@ public class GameProcess {
     }
 
     private void nonGamingOperation(int currentUserID, NonGamingProtocol nonGamingProtocol) {
-        //command: start,login, logout, invite(inviteOperation, inviteResponse), recovery
+        //command: start,login, logout, invite(inviteOperation, inviteResponse), recovery, peerLogin
         String command = nonGamingProtocol.getCommand();
         String[] userList = nonGamingProtocol.getUserList();
+
+        String clientHost = nonGamingProtocol.getLocalHostAddress();
+        String clientLocalServerPort = nonGamingProtocol.getLocalServerPort();
         boolean isAccept = nonGamingProtocol.isInviteAccepted();
         int hostID = nonGamingProtocol.getHostID();
-        nonGamingOperationExecutor(currentUserID, command, userList, isAccept, hostID);
+        nonGamingOperationExecutor(currentUserID, command, userList, isAccept, hostID, clientHost, clientLocalServerPort);
     }
+
+    private void addPeerHost(String userName, String hostAddr, String port) {
+        PeerHosts newPeerHost = new PeerHosts(userName, hostAddr, port);
+        Net.getInstance().getPeerHosts().add(newPeerHost);
+    }
+
 
     private void gamingOperation(int currentUserID, GamingOperationProtocol gamingOperationProtocol) {
         //command: vote, voteResponse, disconnect
         String command = gamingOperationProtocol.getCommand();
+        int index = userIndexSearch(currentUserID);
+        String userName = "";
+        if (index != -1) {
+            userName = userList.get(index).getUserName();
+        }
         switch (command) {
             case "vote":
                 if (gameStart && (whoseTurn == playerList
@@ -146,7 +176,7 @@ public class GameProcess {
                 }
                 break;
             case "disconnect":
-                disconnect(currentUserID);
+                disconnect(currentUserID, userName);
                 break;
             default:
                 break;
@@ -162,53 +192,136 @@ public class GameProcess {
         }
     }
 
-    private void disconnect(int currentUserID) {
-        if (gameStart == true) {
-            if (playerList.get(playerIndexSearch(currentUserID)) != null) {
-                playerList.remove(playerIndexSearch(currentUserID));
-                win(currentUserID);
-            }
-            //remove disconnected users
-//            if (db.containsKey(currentUserID)) {
-//                db.remove(currentUserID);
-//                userList.remove(userIndexSearch(currentUserID));
-//            }
-            userRemove(userList.get(userIndexSearch(currentUserID)));
-            userListToClient();
+    private void quit(int currentUserID) {
+        int playerIndex = playerIndexSearch(currentUserID);
+        Player playerToRemove = playerList.get(playerIndex);
+        playerToRemove.getUser().setStatus("available");
+        if (gameStart) {
+            if (playerIndex != -1 && playerToRemove != null) {
+                if (whoseTurn == playerToRemove.getInGameSequence()) {  // next turn belongs to the player to be removed
+                    playerList.remove(playerIndex);
+                    updatePlayersID();
+                    if (gameEndCheck()) {
+                        win(currentUserID);
+                        //reset gameEndCheck parameters
+                        numPass = 0;
+                        gameLoopStartSeq = 0;
+                    } else {
+                        gameTurnControl();
+                        boardUpdate(currentUserID);
+                    }
+                } else { // next turn does not belong to the player to be removed
+                    playerList.remove(playerIndex);
+                    updatePlayersID();
 
-            //reset gameEndCheck parameters
-            numPass = 0;
-//            gameLoopStartSeq = 0;
-        } else if (db.containsKey(currentUserID)) {
-            //remove disconnected users
-            userRemove(userList.get(userIndexSearch(currentUserID)));
-//            if (db.containsKey(currentUserID)) {
-//                db.remove(currentUserID);
-//                userList.remove(userIndexSearch(currentUserID));
+                    if (gameEndCheck()) {
+                        win(currentUserID);
+                        //reset gameEndCheck parameters
+                        numPass = 0;
+                        gameLoopStartSeq = 0;
+                    } else {
+                        boardUpdate(currentUserID);
+                    }
+                }
+            }
+        } else { // if the game does not start
+//            if (playerIndex != -1) {
+//                playerList.remove(playerIndex);
 //            }
+        }
+
+        userListToClient();
+    }
+
+    private void disconnect(int currentUserID, String userName) {
+        if (gameStart == true) {
+            int playerIndex = playerIndexSearch(currentUserID);
+            if (playerIndex != -1 && playerList.get(playerIndex) != null) {
+                if (whoseTurn == playerList.get(playerIndex).getInGameSequence()) {
+                    playerList.remove(playerIndexSearch(currentUserID));
+                    updatePlayersID();
+                    if (gameEndCheck()) {
+                        System.err.println("Game end check " + gameEndCheck());
+                        win(currentUserID);
+                        //reset gameEndCheck parameters
+                        numPass = 0;
+                        gameLoopStartSeq = 0;
+                    } else {
+                        gameTurnControl();
+                        boardUpdate(currentUserID);
+                    }
+                } else {
+                    playerList.remove(playerIndexSearch(currentUserID));
+                    updatePlayersID();
+                    if (gameEndCheck()) {
+                        win(currentUserID);
+                        //reset gameEndCheck parameters
+                        numPass = 0;
+                        gameLoopStartSeq = 0;
+                    } else {
+                        boardUpdate(currentUserID);
+                    }
+                }
+            }
+            int userIndex = userIndexSearch(userName);
+            if (userIndex != -1) {
+                userRemove(userList.get(userIndex));// disconnected user will be removed
+            }
+            userListToClient();
+        } else if (db.containsKey(currentUserID)) {
+            int userIndex = userIndexSearch(userName);
+            if (userIndex != -1) {
+                userRemove(userList.get(userIndex));// disconnected user will be removed
+            }
             userListToClient();
         } else {
             //Not exist
         }
+
+        // remove peerHost
+        System.err.println("Server peerHosts: " + Net.getInstance().getPeerHosts());
+        int removeIndex = peerHostsIndexSearch(userName);
+        if (removeIndex > -1) {
+            Net.getInstance().getPeerHosts().remove(removeIndex);
+        }
     }
-    private void recovery(){
-        recoverGlobalParas();
-        userListToClient();
-        if (gameStart){
-            if (voteInitiator == ID_PLACEHOLDER){
-                boardUpdate(playersID);
-            }else{
-                int[] start = latestBrickPlacing.getStartPosition();
-                int[] end = latestBrickPlacing.getEndPosition();
-                voting(voteInitiator,start, end);
+
+    private int peerHostsIndexSearch(String userName) {
+        int index = 0;
+        for (PeerHosts peer : Net.getInstance().getPeerHosts()) {
+            if (userName.trim().equals(peer.getUserName())) {
+                break;
             }
-        }else{
+            index++;
+        }
+        if (index < userList.size()) {
+            return index;
+        } else {
+            return -1; // not found
+        }
+    }
+
+
+    public void recovery() {
+        recoverGlobalParas(GuiController.get().getGameState());  //new leader's gameState is the agreed global gameState
+        userListToClient();
+        if (gameStart) {
+            if (voteInitiator == ID_PLACEHOLDER) { // if not in a voting progress previously
+//                boardUpdate(playersID);
+                hasNotVote(ID_PLACEHOLDER, latestBrickPlacing);
+            } else { // if in a voting progress
+                hasVote(voteInitiator, latestBrickPlacing);
+//                int[] start = latestBrickPlacing.getStartPosition();
+//                int[] end = latestBrickPlacing.getEndPosition();
+//                voting(voteInitiator,start, end);
+            }
+        } else {
             userListToClient();
         }
         enableBackup();
     }
 
-    private void voting(int initiator, int[] start, int[] end){
+    private void voting(int initiator, int[] start, int[] end) {
         boardUpdate(initiator);
         voteOperation(initiator, start, end);
         waitVoting();
@@ -221,7 +334,7 @@ public class GameProcess {
         voteSuccess = false;
     }
 
-    private void enableBackup(){
+    private void enableBackup() {
         GameEngine.getInstance().startBackup();
     }
 
@@ -277,6 +390,7 @@ public class GameProcess {
     }
 
     private void hasNotVote(int currentUserID, GamingOperationProtocol gamingOperationProtocol) {
+        latestBrickPlacing = gamingOperationProtocol;
         BrickPlacing bp = gamingOperationProtocol.getBrickPlacing();
         //initial check gameEnd conditions (1. if every player had a turn -- sequence loop check  2. num of direct pass)
         if (bp.getBrick() != null) {
@@ -302,24 +416,58 @@ public class GameProcess {
 
     private boolean gameEndCheck() {
 //        int index = playerIndexSearch(currentUserID);
-        if (numPass == playerList.size()) {
+        if (numPass == playerList.size() || playerList.size() <= 1) {
             return true;  // game should be terminated
         } else {
             return false;  // game should continue
         }
     }
 
+    private int findMaxSequence() {
+        int max = ID_PLACEHOLDER;
+        for (int i = 0; i < playerList.size() - 1; i++) {
+            max = Math.max(playerList.get(i).getInGameSequence(), playerList.get(i + 1).getInGameSequence());
+        }
+        return max;
+    }
+
+    // check if the player represented by the next sequence exists in playerList
+    private boolean checkSequence(int nextSequence) {
+        for (Player player : playerList) {
+            if (player.getInGameSequence() == nextSequence) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     private void gameTurnControl() {
-        if (whoseTurn < playerList.size()) {
+        int maxSequence = findMaxSequence();
+        if (whoseTurn < maxSequence) {
             whoseTurn++;
+            while (true) {
+                if (!checkSequence(whoseTurn)) {
+                    whoseTurn++;
+                } else {
+                    break;
+                }
+            }
         } else {
             whoseTurn = 1;
+            while (true) {
+                if (!checkSequence(whoseTurn)) {
+                    whoseTurn++;
+                } else {
+                    break;
+                }
+            }
         }
     }
 
     public void waitVoting() {
         System.out.println("START WAITING: " + numVoted);
-        while (numVoted != (playerList.size())) {
+        while (numVoted < (playerList.size())) {
             Pack temp;
             try {
                 temp = queue.take();
@@ -347,13 +495,16 @@ public class GameProcess {
         EnginePutMsg.getInstance().putMsgToCenter(vote);
     }
 
-    private void nonGamingOperationExecutor(int currentUserID, String command, String[] peerList, boolean isAccept, int hostID) {
+    private void nonGamingOperationExecutor(int currentUserID, String command, String[] peerList, boolean isAccept, int hostID, String clientHost, String clientLocalPort) {
         switch (command.trim()) {
             case "start":
                 start(currentUserID);
                 break;
             case "login":
-                login(currentUserID, peerList[0]);
+                login(currentUserID, peerList[0], clientHost, clientLocalPort);
+                break;
+            case "peerLogin":
+                peerLogin(currentUserID, peerList[0], clientHost, clientLocalPort);
                 break;
             case "logout":
                 logout(currentUserID);
@@ -365,17 +516,13 @@ public class GameProcess {
                 inviteResponse(currentUserID, hostID, isAccept);
                 break;
             case "quit":
-                if (gameStart == true) {
-                    if (playerList.get(playerIndexSearch(currentUserID)) != null) {
-                        playerList.remove(playerIndexSearch(currentUserID));
-                        win(currentUserID);
-                    }
-                }
+                quit(currentUserID);
+                break;
             case "leave":
                 leaveTeam(currentUserID, hostID);
                 break;
-            case "recovery":
-                recovery();
+//            case "recovery":
+//                recovery();
             default:
                 error(currentUserID, "Unknown Error", "lobby");
                 break;
@@ -426,7 +573,11 @@ public class GameProcess {
             }
             index++;
         }
-        return index;
+        if (index < userList.size()) {
+            return index;
+        } else {
+            return -1; // not found
+        }
     }
 
     private int userIndexSearch(int userID) {
@@ -437,7 +588,12 @@ public class GameProcess {
             }
             index++;
         }
-        return index;
+
+        if (index < userList.size()) {
+            return index;
+        } else {
+            return -1; // not found
+        }
     }
 
     private void boardInitiation() {
@@ -494,11 +650,15 @@ public class GameProcess {
         return team;
     }
 
-    private void login(int currentUserID, String userName) {
+    private void login(int currentUserID, String userName, String clientHost, String clientLocalServerPort) {
         // same username, replicated login requests not allowed
         if (!db.contains(userName) && db.get(currentUserID) == null) {
             db.put(currentUserID, userName);
             userList.add(new Users(currentUserID, userName));
+
+            // add peer
+            addPeerHost(userName, clientHost, clientLocalServerPort);
+
             //send currentUserList back to client
             userListToClient();
         } else {
@@ -507,20 +667,55 @@ public class GameProcess {
 
     }
 
+    // Follower handles login request comes from other peers -- binding userName & ID locally
+    private void peerLogin(int currentUserID, String userName, String clientHost, String clientLocalServerPort) {
+        if (!db.contains(userName) && db.get(currentUserID) == null) {
+            db.put(currentUserID, userName);
+            userList.add(new Users(currentUserID, userName));
+
+            // add peer
+            addPeerHost(userName, clientHost, clientLocalServerPort);
+            System.err.println("after peerLogin:  " + Net.getInstance().getPeerHosts());
+        } else {
+            error(currentUserID, "User already Exists", "Peerlogin");
+        }
+    }
+
     private void logout(int currentUserID) {
         if (db.get(currentUserID) != null) {
-            if (gameStart) {
-//                userList.remove(userIndexSearch(currentUserID));
-//                db.remove(currentUserID);
-                if (playerList.get(playerIndexSearch(currentUserID)) != null) {
-                    playerList.remove(playerIndexSearch(currentUserID));
-                    win(currentUserID);
+            if (gameStart) { // the game is in progress
+                int playerIndex = playerIndexSearch(currentUserID);
+                if (playerIndex != -1) {  // if the user who logs out is a player in game
+                    Player playerToRemove = playerList.get(playerIndex);
+                    if (whoseTurn == playerToRemove.getInGameSequence()) { //current turn belongs to playerToRemove
+                        playerList.remove(playerIndex);
+                        updatePlayersID();
+
+                        if (gameEndCheck()) { // game should be terminated
+                            win(currentUserID);
+                            //reset gameEndCheck parameters
+                            numPass = 0;
+                            gameLoopStartSeq = 0;
+                        } else { // game should continue
+                            gameTurnControl();
+                            boardUpdate(currentUserID);
+                        }
+                    } else { // the current turn does not belong to playerToRemove
+                        playerList.remove(playerIndex);
+                        updatePlayersID();
+                        if (gameEndCheck()) {
+                            win(currentUserID);
+                            //reset gameEndCheck parameters
+                            numPass = 0;
+                            gameLoopStartSeq = 0;
+                        } else {
+                            boardUpdate(currentUserID);
+                        }
+                    }
                 }
                 userRemove(userList.get(userIndexSearch(currentUserID)));
                 userListToClient();
-            } else {
-//                userList.remove(userIndexSearch(currentUserID));
-//                db.remove(currentUserID);
+            } else {  // the game is not in progress
                 userRemove(userList.get(userIndexSearch(currentUserID)));
                 userListToClient();
             }
@@ -668,6 +863,15 @@ public class GameProcess {
 
     }
 
+    private void updatePlayersID() {
+        if (playerList != null) {
+            playersID = new int[playerList.size()];
+            for (int i = 0; i < playerList.size(); i++) {
+                playersID[i] = playerList.get(i).getUser().getUserID();
+            }
+        }
+    }
+
     private void boardUpdate(int currentUserID) {
         String command = "update";
 //            Player[] playerArr = playerList.toArray(new Player[playerList.size()]);
@@ -711,16 +915,27 @@ public class GameProcess {
             winner.add(playerList.get(j));
         }
         int size = winner.size();
+        teamStatusUpdate(teams.get(gameHost), "available");
+
+        for (Player member : winner){
+            if (member != null) {
+                member.getUser().setStatus("available");
+            }
+        }
+
+        for (Player player : playerList){
+            if (player != null){
+                int userIndex = userIndexSearch(player.getUser().getUserName());
+                userList.get(userIndex).setStatus("available");
+            }
+        }
+
         Player[] temp = winner.toArray(new Player[size]);
         Pack win = new Pack(currentUserID, JSON.toJSONString(new GamingSync(command, temp, whoseTurn, board, voteSuccess)));
         win.setRecipient(playersID);   //multi-cast
         EnginePutMsg.getInstance().putMsgToCenter(win);
-        teamStatusUpdate(teams.get(gameHost), "available");
-        userListToClient();
-
         //terminate game, reset parameters
         resetGameParameters();
-
         boardInitiation();
 
         if (teams.containsKey(gameHost)) {
@@ -728,11 +943,14 @@ public class GameProcess {
             teams.remove(gameHost, teams.get(gameHost));
             gameHost = ID_PLACEHOLDER;
         }
+
+        userListToClient();
     }
 
-    private void updateGameState(){
+    private void updateGameState() {
         gameState.setBoard(board);
         gameState.setAgree(agree);
+        gameState.setGameHost(gameHost);
 //        gameState.setDb(db);
         gameState.setGameStart(gameStart);
         gameState.setNumPass(numPass);
@@ -744,18 +962,18 @@ public class GameProcess {
         gameState.setPlayersID(playersID); // for multi-cast
         gameState.setLatestBrickPlacing(latestBrickPlacing);
 
-        if(playerList != null) {
+        if (playerList != null) {
             Player[] players = new Player[playerList.size()];
             players = playerList.toArray(players);
             gameState.setPlayerList(players);
         }
-        if(userList != null) {
+        if (userList != null) {
             Users[] users = new Users[userList.size()];
             users = userList.toArray(users);
             gameState.setUserList(users);
         }
 
-        if(teamsInWait != null) {
+        if (teamsInWait != null) {
             Team[] teams_list = new Team[teamsInWait.size()];
             for (int i = 0; i < teams_list.length; i++) {
                 teams_list[i] = new Team(teamsInWait.get(i).get(0).getUserID(), teamsInWait.get(i));
@@ -764,45 +982,154 @@ public class GameProcess {
         }
     }
 
-    private void recoverGlobalParas(){
-        board = gameState.getBoard();
-        agree = gameState.getAgree();
-        gameStart = gameState.isGameStart();
-        numPass = gameState.getNumPass();
-        numVoted = gameState.getNumVoted();
-        whoseTurn = gameState.getWhoseTurn();
-        voteInitiator = gameState.getVoteInitiator();
-        voteSuccess = gameState.isVoteSuccess();
-        playersID = gameState.getPlayersID();
-        latestBrickPlacing = gameState.getLatestBrickPlacing();
-
-        if (gameState.getPlayerList() !=null){
-            playerList = new ArrayList<Player>();
-            for (Player player : gameState.getPlayerList()){
-                playerList.add(player);
-            }
-        }
-
-        if (gameState.getUserList() !=null){
-            userList = new ArrayList<Users>();
-            for (Users user : gameState.getUserList()){
-                userList.add(user);
-            }
-        }
-
-        if (gameState.getTeamsInWait() !=null){
-            teamsInWait = new ArrayList<ArrayList<Users>>();
-            for (Team team : gameState.getTeamsInWait()){
-                ArrayList<Users> tempTeam = new ArrayList<Users>();
-                for (Users teamMember : team.getTeamMember()){
-                    tempTeam.add(teamMember);
-                }
-                teamsInWait.add(tempTeam);
+    // recover userList stats
+    private void recoverUserList(Users[] oldUserList) {
+        for (Users oldUser : oldUserList) {
+            int index = userIndexSearch(oldUser.getUserName());
+            // recovery user stats from old userList (old leader's)
+            if (index != -1) {
+                userList.get(index).setNumWin(oldUser.getNumWin());
+                userList.get(index).setStatus(oldUser.getStatus());
             }
         }
     }
 
-    private void resetGameParameters(){
+    // recover teams
+    private void recoverTeams(Team[] oldTeams) {
+        for (Team oldTeam : oldTeams) {
+            int hostID = oldTeam.getHostID();
+            ArrayList<Users> newTeam = new ArrayList<>();
+            for (Users oldMember : oldTeam.getTeamMember()) {
+                int newMemberIndex = userIndexSearch(oldMember.getUserName());
+                if (newMemberIndex != -1) {
+                    Users newMember = userList.get(newMemberIndex);
+                    newTeam.add(newMember);
+                }
+            }
+            teamsInWait.add(newTeam);
+            teams.put(hostID, newTeam);
+        }
+    }
+
+    // recover playerList by reconstructing according to userName
+    private void recoverPlayerList(Player[] oldPlayerList) {
+        for (Player oldPlayer : oldPlayerList) {
+            int oldPoints = oldPlayer.getPoints();
+            int inGameSequence = oldPlayer.getInGameSequence();
+            String oldPlayerName = oldPlayer.getUser().getUserName();
+            int newPlayerUserIndex = userIndexSearch(oldPlayerName);
+            if (newPlayerUserIndex != -1) {
+                Player newPlayer = new Player(userList.get(newPlayerUserIndex), inGameSequence);
+                newPlayer.setPoints(oldPoints);
+                playerList.add(newPlayer);
+            }
+        }
+    }
+
+    // map vote initiator ID from old leader's record
+    private int mapVoteInitiator(int oldInitiator, Users[] oldUserList) {
+        int newInitiatorID = ID_PLACEHOLDER;
+        for (Users oldUser : oldUserList) {
+            if (oldUser.getUserID() == oldInitiator) {
+                int newIndex = userIndexSearch(oldUser.getUserName());
+                if (newIndex != -1) {
+                    newInitiatorID = userList.get(newIndex).getUserID();
+                    break;
+                }
+            }
+        }
+        return newInitiatorID;
+    }
+
+    // map playersID from old playersID -- playersID is for multi-casting
+    private int[] mapPlayersID(int[] oldPlayersID, Users[] oldUserList) {
+        int[] newPlayersID = new int[oldPlayersID.length];
+        int arrayIndex = 0;
+        for (int oldPlayerID : oldPlayersID) {
+            // find old User in oldUserList by oldPlayerID
+            for (Users oldUser : oldUserList) {
+                if (oldPlayerID == oldUser.getUserID()) {
+                    int newIndex = userIndexSearch(oldUser.getUserName());
+                    if (newIndex != -1) {
+                        int newPlayerID = userList.get(newIndex).getUserID();
+                        newPlayersID[arrayIndex++] = newPlayerID;
+                    }
+                }
+            }
+        }
+        return newPlayersID;
+    }
+
+    // map userID field in brickPlacing (lastBrickPlacing)
+    private GamingOperationProtocol mapBrickPlacing(GamingOperationProtocol oldLatestBrickPlacing, Users[] oldUserList) {
+        int oldID = oldLatestBrickPlacing.getBrickPlacing().getUserID();
+        int newID = ID_PLACEHOLDER;
+        for (Users oldUser : oldUserList) {
+            if (oldID == oldUser.getUserID()) {
+                newID = userIndexSearch(oldUser.getUserName());
+                break;
+            }
+        }
+        if (newID != -1) {
+            oldLatestBrickPlacing.getBrickPlacing().setUserID(newID);
+        }
+        return oldLatestBrickPlacing;
+    }
+
+    // map gameHost ID from oldUserList
+    private int mapGameHost(int oldGameHost, Users[] oldUserList) {
+        for (Users oldUser : oldUserList) {
+            if (oldUser.getUserID() == oldGameHost) {
+                int newIndex = userIndexSearch(oldUser.getUserName());
+                if (newIndex != -1) {
+                    return userList.get(newIndex).getUserID();
+                }
+            }
+        }
+        return ID_PLACEHOLDER;
+    }
+
+
+    private void recoverGlobalParas(GameState newGameState) {
+        board = newGameState.getBoard();
+        agree = newGameState.getAgree();
+        gameStart = newGameState.isGameStart();
+        numPass = newGameState.getNumPass();
+        numVoted = newGameState.getNumVoted();
+        whoseTurn = newGameState.getWhoseTurn(); // inGameSequence -- no mapping
+        voteSuccess = newGameState.isVoteSuccess();
+
+        // update userList first -- numWin, status
+        if (newGameState.getUserList() != null) {
+            recoverUserList(newGameState.getUserList());
+        }
+
+        // then update teams
+        if (newGameState.getTeamsInWait() != null) {
+            recoverTeams(newGameState.getTeamsInWait());
+        }
+
+        // update playerList
+        if (newGameState.getPlayerList() != null) {
+            recoverPlayerList(newGameState.getPlayerList());
+        }
+
+        // mapping voteInitiator ID
+        voteInitiator = mapVoteInitiator(newGameState.getVoteInitiator(), newGameState.getUserList()); // needs username id mapping
+        gameHost = mapGameHost(newGameState.getGameHost(), newGameState.getUserList());
+
+        // update playersID
+        if (newGameState.getPlayersID() != null) {
+            playersID = mapPlayersID(newGameState.getPlayersID(), newGameState.getUserList());
+        }
+
+        // recovery lastBrickPlacing status
+        if (newGameState.getLatestBrickPlacing() != null) {
+            latestBrickPlacing = mapBrickPlacing(newGameState.getLatestBrickPlacing(), newGameState.getUserList());
+        }
+    }
+
+    private void resetGameParameters() {
         //terminate game, reset parameters
         gameStart = false;
         playersID = null;

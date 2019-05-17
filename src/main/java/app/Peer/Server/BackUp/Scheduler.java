@@ -15,6 +15,7 @@ public class Scheduler implements Runnable{
 
     @Override
     public void run() {
-        timer.scheduleAtFixedRate(new BackUpTask(),1000,15000);
+        timer.scheduleAtFixedRate(new BackUpTask(),5000,15000);
     }
 }
+

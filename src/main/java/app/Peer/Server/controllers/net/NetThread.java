@@ -3,6 +3,8 @@ package app.Peer.Server.controllers.net;
 
 import app.Protocols.GamingProtocol.GamingOperationProtocol;
 import app.Protocols.Pack;
+import app.Protocols.RaftProtocol.RegisterProtocol;
+import app.Protocols.ScrabbleProtocol;
 import com.alibaba.fastjson.JSON;
 
 import java.io.BufferedReader;
@@ -21,12 +23,15 @@ public class NetThread implements Runnable {
     private final BlockingQueue<Pack> toNetPutMsg;
     private int clientID;
 
-    public NetThread(Socket client, Hashtable clientDataHash, Hashtable clientNameHash, BlockingQueue toNetPutMsg, int clientID) {
+
+    public NetThread(Socket client, Hashtable clientDataHash, Hashtable clientNameHash,
+                     BlockingQueue toNetPutMsg, int clientID) {
         this.client = client;
         this.clientDataHash = clientDataHash;
         this.clientNameHash = clientNameHash;
         this.toNetPutMsg = toNetPutMsg;
         this.clientID = clientID;
+        System.out.println("init new NetThread ... ");
     }
 
     @Override
@@ -45,6 +50,19 @@ public class NetThread implements Runnable {
                 if(client.isClosed()==false&&client.isConnected()==true){
                     String message = inputStream.readLine();
                     if(message!=null||!message.equals("")){
+                        // extract clientName from message and put into clientNameSocketMap
+                        ScrabbleProtocol scrabbleProtocol = JSON.parseObject(bouncyCastleBase64(message), ScrabbleProtocol.class);
+                        if (scrabbleProtocol.getTAG().equals("RegisterProtocol")) {
+                            RegisterProtocol registerProtocol = JSON.parseObject(bouncyCastleBase64(message), RegisterProtocol.class);
+                            String clientName = registerProtocol.getClientName();
+                            if(!Net.getInstance().getClientNameSocketMap().containsKey((clientName))) {
+                                Net.getInstance().putClientNameSocketMap(clientName, client);
+                            }
+                            System.out.println("NetThread: " + Net.getInstance().getClientNameSocketMap());
+                            continue;
+                        }
+
+
                         // toNetPutMsg -- from client to net
                         toNetPutMsg.put(new Pack(clientID,bouncyCastleBase64(message)));
                     }else {
@@ -72,7 +90,12 @@ public class NetThread implements Runnable {
             System.out.println("client "+clientID+" is closed!");
             Net.getInstance().getClientDataHsh().remove(client);
             Net.getInstance().getClientNameHash().remove(clientID);
-            toNetPutMsg.put(new Pack(clientID, JSON.toJSONString(new GamingOperationProtocol("disconnect"))));
+            if (Net.getInstance().getClientNameSocketMap().containsValue(client)) {
+                Net.getInstance().getClientNameSocketMap().entrySet()
+                        .removeIf(entry -> (client.equals(entry.getValue())));
+            }
+            toNetPutMsg.put(new Pack(clientID, JSON.toJSONString(
+                    new GamingOperationProtocol("disconnect"))));
             
         } catch (Exception e) {
             e.printStackTrace();

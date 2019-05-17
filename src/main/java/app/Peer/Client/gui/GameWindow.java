@@ -69,7 +69,6 @@ public class GameWindow implements Runnable {
             @Override
             public void windowClosing(WindowEvent e) {
                 GuiController.get().sendQuitMsg();
-
             }
         });
         frame.setTitle("Scrabble Game "+GuiController.get().getUsername());

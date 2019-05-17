@@ -31,12 +31,27 @@ public class BackupProtocol extends ScrabbleProtocol {
 
     private int initialClientID;
 
+    public int getLeaderID() {
+        return leaderID;
+    }
+
+    public void setLeaderID(int leaderID) {
+        this.leaderID = leaderID;
+    }
+
+    private int leaderID;
+
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
+    }
+
     public BackupProtocol(){
         super.setTAG("BackupProtocol");
     }
-    public BackupProtocol(GameState gameState, PeerHosts[] peerHosts){
+    public BackupProtocol(GameState gameState, PeerHosts[] peerHosts, int leaderID){
         super.setTAG("BackupProtocol");
         this.gameState = gameState;
         this.peerHosts = peerHosts;
+        this.leaderID = leaderID;
     }
 }

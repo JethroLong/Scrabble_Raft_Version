@@ -7,14 +7,11 @@ import app.Protocols.Pack;
 import java.util.concurrent.BlockingQueue;
 
 public class CenterPutMsg implements Runnable {
-    private final BlockingQueue<Pack> fromNet;
-    private final BlockingQueue<Pack> toEngine;
     private final BlockingQueue<Pack> fromEngine;
+
     private final BlockingQueue<Pack> toNet;
 
-    public CenterPutMsg(BlockingQueue<Pack> fromNet, BlockingQueue<Pack> toEngine, BlockingQueue<Pack> fromEngine, BlockingQueue<Pack> toNet) {
-        this.fromNet = fromNet;
-        this.toEngine = toEngine;
+    public CenterPutMsg(BlockingQueue<Pack> fromEngine, BlockingQueue<Pack> toNet) {
         this.fromEngine = fromEngine;
         this.toNet = toNet;
     }
@@ -23,9 +20,9 @@ public class CenterPutMsg implements Runnable {
     public void run() {
         while (true){
             try {
-                Pack pack=null;
-                pack = fromEngine.take();
-                toNet.put(pack);
+                Pack packFromEngine = fromEngine.take();
+                toNet.put(packFromEngine);
+
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

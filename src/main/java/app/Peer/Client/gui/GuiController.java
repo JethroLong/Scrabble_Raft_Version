@@ -4,20 +4,50 @@ package app.Peer.Client.gui;
 import app.Models.GameState;
 import app.Models.Player;
 import app.Models.Users;
+import app.Peer.Client.Net.ClientNet;
+import app.Peer.Client.Net.ClientNetSendMsg;
+import app.Peer.Client.Net.blockingqueue.ClientNetGetMsg;
 import app.Peer.Server.controllers.gameEngine.GameProcess;
+import app.Peer.Server.controllers.net.Net;
+import app.Peer.Server.controllers.net.NetSendMsg;
 import app.Protocols.GamingProtocol.BrickPlacing;
 import app.Protocols.GamingProtocol.GamingOperationProtocol;
 import app.Protocols.NonGamingProtocol.NonGamingProtocol;
+import app.Protocols.RaftProtocol.RegisterProtocol;
 import com.alibaba.fastjson.JSON;
+
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class GuiController {
     public GuiController() {
         this.revievePack = -1;
+        try {
+            this.localHostAddress = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
     private int revievePack;
     private String username;
     private GameWindow gameWindow;
+
+    public String getLocalServerPort() {
+        return localServerPort;
+    }
+
+    public void setLocalServerPort(String localServerPort) {
+        this.localServerPort = localServerPort;
+    }
+
+    private String localServerPort;
+    private String localHostAddress;
+
+    public String getLocalHostAddress() {
+        return this.localHostAddress;
+    }
 
     private String status;
     private int seq = -1;
@@ -25,15 +55,21 @@ public class GuiController {
 
     private int currentHostID;
 
+    private boolean isLeader = false;
     public boolean isLeader() {
         return isLeader;
     }
-
     public void setLeader(boolean leader) {
         isLeader = leader;
     }
 
-    private boolean isLeader = false;
+    public GameState getGameState() {
+        return gameState;
+    }
+
+    public void setGameState(GameState gameState) {
+        this.gameState = gameState;
+    }
 
     private GameState gameState;
 
@@ -87,7 +123,7 @@ public class GuiController {
         this.seq = seq;
     }
 
-    String getUsername() {
+    public String getUsername() {
         return username;
     }
 
@@ -98,6 +134,7 @@ public class GuiController {
     public String getId() {
         return id;
     }
+    public int getIntId(){return Integer.parseInt(id);}
 
     private void runGameLobbyWindow() {
         gameWindow = GameWindow.get();
@@ -136,6 +173,14 @@ public class GuiController {
                 LoginWindow.get().showDialog("Welcome!  "+ this.username);
                 runGameLobbyWindow();
                 revievePack++;
+            }else{
+                // set self id to be that from new leader
+                for (Users user : userList) {
+                    if (user.getUserName().equals(this.username)) {
+                        setId(user.getUserID());
+                        break;
+                    }
+                }
             }
 //        gameLobbyWindow.updateUserList(userList);
             synchronized (GameLobbyWindow.get()) {
@@ -201,11 +246,25 @@ public class GuiController {
         Send to Center
      */
 
-    public void loginGame() {
+    public void loginGame(String localServerPort) {
         String[] selfArray = new String[1];
         selfArray[0] = username;
-        NonGamingProtocol nonGamingProtocol = new NonGamingProtocol("login", selfArray);
+        NonGamingProtocol nonGamingProtocol = new NonGamingProtocol("login", selfArray, localServerPort, this.localHostAddress);
         GuiSender.get().sendToCenter(nonGamingProtocol);
+
+        // send RegisterProtocol to leader server
+        RegisterProtocol registerProtocol = new RegisterProtocol(username, this.localHostAddress, localServerPort);
+        GuiSender.get().sendToCenter(registerProtocol);
+    }
+
+    // after establishing connection to a new peer, login to the peer server process to bind username & userID in that peer
+    public void loginPeerServer(String peerServerName, String localServerPort){
+        String[] selfName = new String[1];
+        selfName[0] = username;
+        NonGamingProtocol nonGamingProtocol =new NonGamingProtocol("peerLogin", selfName, localServerPort, this.localHostAddress);
+        String jsonStr = JSON.toJSONString(nonGamingProtocol);
+        Socket peerServerSocket = ClientNet.getInstance().getPeerNameSocketMap().get(peerServerName);
+        new Thread(new ClientNetSendMsg(jsonStr, peerServerSocket)).start();
     }
 
     void invitePlayers(String[] players) {
@@ -303,14 +362,23 @@ public class GuiController {
 
     public void serverRecovery(){
         // check if in a game
-        if (gameState.isGameStart()){
-            GameProcess.getInstance().setGameState(gameState);
-            NonGamingProtocol recovery = new NonGamingProtocol();
-            recovery.setCommand("recovery");
-            GuiSender.get().sendToCenter(recovery); // a request for recovery
-        }else{
-            GameProcess.getInstance().setGameState(gameState);
-        }
+//        if (gameState.isGameStart()){
+            /////////
+            // rebind userID and username -- all id related fields in gameState ---> newGameSate
+            ////////
+        GameProcess.getInstance().setGameState(gameState); // newGameState
+//            NonGamingProtocol recovery = new NonGamingProtocol();
+
+        // test
+        ClientNetGetMsg.getInstance().setSocket(ClientNet.getInstance().getLeaderSocket());
+
+////            recovery.setCommand("recovery");
+        GameProcess.getInstance().recovery();
+//            GuiSender.get().sendToCenter(recovery); // a request for recovery
+//        }
+//        else{
+//            GameProcess.getInstance().setGameState(gameState);
+//        }
     }
 }
 

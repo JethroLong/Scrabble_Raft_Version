@@ -22,7 +22,14 @@ public class MonitorGui {
 
     public MonitorGui() {
         this.portNum = 6666;
-        new Thread(new ControlCenter()).start();
+//        new Thread(new ControlCenter()).start();
+        new Thread(ControlCenter.get()).start();
+        initialize();
+    }
+
+    public MonitorGui(int localServerPort){
+        this.portNum = localServerPort;
+        new Thread(ControlCenter.get(portNum)).start();
         initialize();
     }
 
@@ -77,26 +84,20 @@ public class MonitorGui {
         };
         shutdown.addKeyListener(keyListener);
         invite.addKeyListener(keyListener);
-        shutdown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                try {
-                    shutdown();
-                }catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
-                }
+        shutdown.addActionListener((ActionEvent arg0) -> {
+            try {
+                shutdown();
+            }catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "IP or Port Number is wrong!");
             }
         });
 
-        invite.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                try {
-                    setClipboardText(Toolkit.getDefaultToolkit().getSystemClipboard(), JSON.toJSONString(new String[]{
-                            InetAddress.getLocalHost().getHostAddress(), String.valueOf(portNum)}, true));
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                }
+        invite.addActionListener((ActionEvent arg0) -> {
+            try {
+                setClipboardText(Toolkit.getDefaultToolkit().getSystemClipboard(), JSON.toJSONString(new String[]{
+                        InetAddress.getLocalHost().getHostAddress(), String.valueOf(portNum)}, true));
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
             }
         });
         this.frame.setVisible(true);
