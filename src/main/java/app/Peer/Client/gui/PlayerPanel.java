@@ -97,6 +97,7 @@ public class PlayerPanel extends JPanel {
     }
 
     synchronized void updatePlayerList(Player[] players) {
+        clearPlayerList();
         synchronized (playerList){
             for (Player player : players) {
                 System.out.printf("name: %s seq: %d",player.getUser().getUserName(), player.getInGameSequence());

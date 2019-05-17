@@ -915,11 +915,10 @@ public class GameProcess {
             winner.add(playerList.get(j));
         }
         int size = winner.size();
+        teamStatusUpdate(teams.get(gameHost), "available");
         Player[] temp = winner.toArray(new Player[size]);
         Pack win = new Pack(currentUserID, JSON.toJSONString(new GamingSync(command, temp, whoseTurn, board, voteSuccess)));
         win.setRecipient(playersID);   //multi-cast
-        teamStatusUpdate(teams.get(gameHost), "available");
-
         EnginePutMsg.getInstance().putMsgToCenter(win);
         //terminate game, reset parameters
         resetGameParameters();
