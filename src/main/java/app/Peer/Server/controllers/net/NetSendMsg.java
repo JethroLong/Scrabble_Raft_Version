@@ -67,7 +67,7 @@ public class NetSendMsg implements Runnable {
         client = Net.getInstance().getClientNameSocketMap().get(clientName);
 //        if(client != null){
         try{
-            if (!client.isClosed()) {
+            if (!client.isClosed() && client != null) {
 //                System.out.println("NegSendMsg Send to Peer() .." + client);
                 sendMsgOperation(msg);
             }
